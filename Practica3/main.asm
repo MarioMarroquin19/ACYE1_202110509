@@ -1,72 +1,71 @@
-LimpiarConsola MACRO
+BorrarPantalla MACRO
     MOV AX, 03h
     INT 10h
 ENDM
 
-ImprimirCadena MACRO registroPrint
+MostrarTexto MACRO registroTexto
     MOV AH, 09h
-    LEA DX, registroPrint
+    LEA DX, registroTexto
     INT 21h    
 ENDM
 
-obtenerOpcion MACRO regOpcion
+CapturarOpcion MACRO regSeleccion
     MOV AH, 01h
     INT 21h
-    MOV regOpcion, AL
+    MOV regSeleccion, AL
 ENDM
 
-ImprimirTableJuego MACRO
-    LOCAL fila, columna 
+DibujarTablero MACRO
+    LOCAL filaActual, columnaActual 
 
-    MOV BX, 0 ; indice del indicador de fila (1-8)
-    XOR SI, SI ; indice del tablero (0-63)
+    MOV BX, 0 ; índice del indicador de fila (1-8)
+    XOR SI, SI ; índice del tablero (0-63)
 
-    ImprimirCadena indicadorColumnas
-    MOV CL, 0; indice de la columna (A-H)
+    MostrarTexto tituloColumnas
+    MOV CL, 0; índice de la columna (A-H)
 
-    fila: 
-        ImprimirCadena salto
-        MOV AH, 02h; código interrupcion, imprimir un caracter
-        MOV DL, identificadorFila[BX]; caracter a imprimir
-        INT 21h; llamar interrupcion
+    filaActual: 
+        MostrarTexto saltoLinea
+        MOV AH, 02h; código interrupción, imprimir un carácter
+        MOV DL, etiquetaFila[BX]; carácter a imprimir
+        INT 21h; llamar interrupción
 
-        MOV DL, 32 ; caracter espacio en blanco 
+        MOV DL, 32 ; carácter espacio en blanco 
         INT 21h
 
-        columna: 
+        columnaActual: 
             MOV DL, tablero[SI]; recorrido del tablero
             INT 21h
 
-            MOV DL, 124; caracter |
+            MOV DL, 124; carácter |
             INT 21h
 
             INC CL; incrementar CL en 1 -> CL++
             INC SI; incrementar SI en 1 -> SI++
 
-            CMP CL, 8 ; si no ha pasado por las 8 columnas, refrescar a la etiqueta columna
-            JB columna; salto a columna
+            CMP CL, 8 ; si no ha pasado por las 8 columnas, refrescar a la etiqueta columnaActual
+            JB columnaActual; salto a columnaActual
 
             MOV CL, 0 ; reiniciar el contador de columnas
-            INC BX; incrementar indice indicador de filas BX en 1 -> BX++
+            INC BX; incrementar índice indicador de filas BX en 1 -> BX++
 
-            CMP BX, 8; Si no ha pasado por todas las filas que refrese a la etiqueta fila
-            JB fila
+            CMP BX, 8; Si no ha pasado por todas las filas que refrese a la etiqueta filaActual
+            JB filaActual
             
 ENDM
 
+RellenarTablero MACRO 
+    LOCAL rellenarPeonBlanco, rellenarPeonNegro, PiezasBlancas, PiezasNegras
 
-LlenarTablero MACRO 
-    LOCAL llenarPeon1, llenarPeon2, Piezas1, Piezas2
 
-
-    MOV SI, 0; indice del tablero
+    MOV SI, 0; índice del tablero
     MOV CH, 0; CONTADOR DE PEONES
 
-    Piezas1:
-        MOV DL, 116; caracter a guardar en el tablero
-        MOV tablero[SI], DL; escribir caracter en el tablero
+    PiezasBlancas:
+        MOV DL, 116; carácter a guardar en el tablero
+        MOV tablero[SI], DL; escribir carácter en el tablero
         PUSH DX; guardamos el registro en la pila
-        INC SI; incrementamos el indice del tablero
+        INC SI; incrementamos el índice del tablero
 
         MOV DX, 99
         MOV tablero[SI], DL
@@ -87,8 +86,8 @@ LlenarTablero MACRO
         INC SI
 
         POP DX ; extraemos registro de la pila y lo almacenamos en DX
-        MOV tablero[SI], DL; esribimos el caracter en el tablero
-        INC SI; incrementamos indice del tablero -> si++
+        MOV tablero[SI], DL; escribimos el carácter en el tablero
+        INC SI; incrementamos índice del tablero -> SI++
 
         POP DX
         MOV tablero[SI], DL
@@ -98,46 +97,46 @@ LlenarTablero MACRO
         MOV tablero[SI], DL
         INC SI
 
-    llenarPeon1:
-        MOV tablero[SI], 112; esribimos el caracter en el tablero
-        INC SI ; incrementamos indice del tablero
+    rellenarPeonBlanco:
+        MOV tablero[SI], 112; escribimos el carácter en el tablero
+        INC SI ; incrementamos índice del tablero
         INC CH; incrementamos el contador de peones
 
-        CMP CH, 8 ; si es menor que regrese a la etiqueta llenarPeon1, caso contrario a llenarPeon2
-        JB llenarPeon1
+        CMP CH, 8 ; si es menor que regrese a la etiqueta rellenarPeonBlanco, caso contrario a rellenarPeonNegro
+        JB rellenarPeonBlanco
 
         MOV CH, 0; CONTADOR DE PEONES
         MOV SI, 48
     
-    llenarPeon2:
+    rellenarPeonNegro:
         MOV tablero[SI], 80
         INC SI
         INC CH
 
         CMP CH, 8
-        JB llenarPeon2
+        JB rellenarPeonNegro
 
-    Piezas2:
-        MOV DL, 116
+    PiezasNegras:
+        MOV DL, 84 ; "T" en ASCII
         MOV tablero[SI], DL
         PUSH DX
         INC SI
 
-        MOV DX, 99
+        MOV DX, 67 ; "C" en ASCII
         MOV tablero[SI], DL
         PUSH DX
         INC SI
 
-        MOV DX, 97
+        MOV DX, 65 ; "A" en ASCII
         MOV tablero[SI], DL
         PUSH DX
         INC SI
 
-        MOV DX, 114
+        MOV DX, 82 ; "R" en ASCII
         MOV tablero[SI], DL
         INC SI
 
-        MOV DX, 35
+        MOV DX, 42 ; "*" en ASCII
         MOV tablero[SI], DL
         INC SI
 
@@ -161,57 +160,59 @@ ENDM
 .STACK 64h
 
 .DATA
-    salto db 10, 13, "$"
-    mensajeIncio db "Universidad de San Carlos de Guatemala", 10, 13, "Facultad de Ingenieria", 10, 13, "ECYS", 10, 13, "$"
-    mensajeMenu db "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
-    opcion db 1 dup("32"); 32 es vacío en ascii
-    indicadorColumnas db "  A B C D E F G H", "$"
-    identificadorFila db "12345678", "$"
+    saltoLinea db 10, 13, "$"
+    textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10, 13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", 10, 13, "SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13, "$"
+    textoMenu db "-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
+    seleccion db 1 dup("32"); 32 es vacío en ASCII
+    tituloColumnas db "  A B C D E F G H", "$"
+    etiquetaFila db "12345678", "$"
     tablero db 64 dup(32) ; row-major o column-major
+
+
 .CODE
 
     MOV AX, @data
     MOV DS, AX
 
-    Main PROC
-        LimpiarConsola
-        ImprimirCadena mensajeIncio
+    Principal PROC
+        BorrarPantalla
+        MostrarTexto textoInicio
 
         Menu:
-            ImprimirCadena mensajeMenu
-            obtenerOpcion opcion            ;obtener la opcion que el usuario elije
+            MostrarTexto textoMenu
+            CapturarOpcion seleccion            ;obtener la opción que el usuario elige
 
-            CMP opcion, 49 ; 49 es el valor ascii de 1, estamos estimulando el registro de banderas
-            JE ImprimirTablero
+            CMP seleccion, 49 ; 49 es el valor ASCII de 1, estamos estimulando el registro de banderas
+            JE MostrarTablero
             
-            CMP opcion, 50 ; 50 es el valor ascii de 2, estamos estimulando el registro de banderas
-            JE ImprimirPuntajes
+            CMP seleccion, 50 ; 50 es el valor ASCII de 2, estamos estimulando el registro de banderas
+            JE MostrarPuntajes
 
-            CMP opcion, 51 ; 51 es el valor ascii de 3, estamos estimulando el registro de banderas
-            JE ImprimirReportes
+            CMP seleccion, 51 ; 51 es el valor ASCII de 3, estamos estimulando el registro de banderas
+            JE MostrarReportes
 
-            CMP opcion, 52 ; 52 es el valor ascii de 4, estamos estimulando el registro de banderas
-            JE Salir
+            CMP seleccion, 52 ; 52 es el valor ASCII de 4, estamos estimulando el registro de banderas
+            JE Salida
             
             
             JMP Menu
 
 
         
-        ImprimirTablero:
-            LimpiarConsola
-            LlenarTablero
-            ImprimirTableJuego
+        MostrarTablero:
+            BorrarPantalla
+            RellenarTablero
+            DibujarTablero
 
-        ImprimirPuntajes:
-
-
-        ImprimirReportes:
+        MostrarPuntajes:
 
 
-       Salir: 
-            MOV AX, 4C00h ;terminar el programa(interrupcion)
+        MostrarReportes:
+
+
+       Salida: 
+            MOV AX, 4C00h ;terminar el programa(interrupción)
             INT 21h
 
-    Main ENDP
+    Principal ENDP
 END
