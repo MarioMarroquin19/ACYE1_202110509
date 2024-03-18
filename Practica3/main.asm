@@ -154,6 +154,20 @@ RellenarTablero MACRO
 
 ENDM
 
+CapturarNombre MACRO regNombre
+    MOV AH, 0Ah
+    LEA DX, regNombre
+    INT 21h
+ENDM
+
+; Macro para mostrar una cadena de texto que fue capturada con la función 0Ah
+MostrarNombreCapturado MACRO buffer
+    LOCAL mostrarNombre
+
+    LEA DX, buffer + 2 ; Omitir los dos primeros bytes del buffer (tamaño máximo y longitud de la cadena)
+    MOV AH, 09h       ; Función de interrupción para mostrar cadena de caracteres
+    INT 21h           ; Interrupción de DOS para mostrar texto
+ENDM
 
 .MODEL small
 
@@ -167,7 +181,9 @@ ENDM
     tituloColumnas db "  A B C D E F G H", "$"
     etiquetaFila db "12345678", "$"
     tablero db 64 dup(32) ; row-major o column-major
-
+    textoNombreJugador db "Ingrese su nombre: ", "$"
+    nombreJugador db 20, ?, 20 dup("$"); Buffer para el nombre con terminador por defecto
+    textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
 
 .CODE
 
@@ -193,14 +209,18 @@ ENDM
 
             CMP seleccion, 52 ; 52 es el valor ASCII de 4, estamos estimulando el registro de banderas
             JE Salida
-            
-            
+                        
             JMP Menu
 
-
-        
         MostrarTablero:
             BorrarPantalla
+            MostrarTexto textoNombreJugador
+            CapturarNombre nombreJugador ; captura el nombre con un máximo de 20 caracteres
+            BorrarPantalla
+            MostrarNombreCapturado nombreJugador
+            MostrarTexto textoInicioJuego
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             RellenarTablero
             DibujarTablero
 
@@ -210,7 +230,7 @@ ENDM
         MostrarReportes:
 
 
-       Salida: 
+        Salida: 
             MOV AX, 4C00h ;terminar el programa(interrupción)
             INT 21h
 
