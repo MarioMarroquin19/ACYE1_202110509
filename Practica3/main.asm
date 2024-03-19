@@ -155,18 +155,11 @@ RellenarTablero MACRO
 ENDM
 
 CapturarNombre MACRO regNombre
-    MOV AH, 0Ah
-    LEA DX, regNombre
+    MOV AH, 3fh
+    MOV BX, 00H
+    MOV CX, 10
+    MOV DX, OFFSET regNombre
     INT 21h
-ENDM
-
-; Macro para mostrar una cadena de texto que fue capturada con la función 0Ah
-MostrarNombreCapturado MACRO buffer
-    LOCAL mostrarNombre
-
-    LEA DX, buffer + 2 ; Omitir los dos primeros bytes del buffer (tamaño máximo y longitud de la cadena)
-    MOV AH, 09h       ; Función de interrupción para mostrar cadena de caracteres
-    INT 21h           ; Interrupción de DOS para mostrar texto
 ENDM
 
 .MODEL small
@@ -176,13 +169,13 @@ ENDM
 .DATA
     saltoLinea db 10, 13, "$"
     textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10, 13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", 10, 13, "SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13, "$"
-    textoMenu db "-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
+    textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
     seleccion db 1 dup("32"); 32 es vacío en ASCII
     tituloColumnas db "  A B C D E F G H", "$"
     etiquetaFila db "12345678", "$"
     tablero db 64 dup(32) ; row-major o column-major
     textoNombreJugador db "Ingrese su nombre: ", "$"
-    nombreJugador db 20, ?, 20 dup("$"); Buffer para el nombre con terminador por defecto
+    nombreJugador db 10 dup(' '),'$'
     textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
 
 .CODE
@@ -217,7 +210,7 @@ ENDM
             MostrarTexto textoNombreJugador
             CapturarNombre nombreJugador ; captura el nombre con un máximo de 20 caracteres
             BorrarPantalla
-            MostrarNombreCapturado nombreJugador
+            MostrarTexto nombreJugador
             MostrarTexto textoInicioJuego
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
