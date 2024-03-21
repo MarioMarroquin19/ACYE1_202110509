@@ -162,6 +162,135 @@ CapturarNombre MACRO regNombre
     INT 21h
 ENDM
 
+NuevoArchivo MACRO nombreArchivo, handle
+
+
+
+    LOCAL error, crearArchivo
+
+    MOV BL, 0
+
+    MOV AH, 3ch; interrupcion para crear un archivo
+    MOV CX, 00h ; atributos del archivo
+    LEA DX, nombreArchivo ; nombre del archivo
+    INT 21h ; llamada a la interrupcion
+
+    MOV handle, AX ; guardamos el manejador del archivo
+    RCL BL, 1 ; guardamos el registro de banderas
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE error
+    JMP crearArchivo
+
+    error: 
+        MostrarTexto saltoLinea
+        MostrarTexto textoErrorArchivo
+        CapturarOpcion
+
+    crearArchivo:
+
+
+
+ENDM
+
+AbrirArchi MACRO nombreArchivo, handle
+
+    LOCAL error, abrirArchivo
+    
+    MOV BL, 0
+
+    MOV AH, 3Dh ; abrir archivo
+    MOV AL, 00h ; modo de lectura
+    LEA DX, nombreArchivo ; nombre del archivo
+    INT 21h ; llamada a la interrupcion
+
+    MOV handle, AX ; guardamos el manejador del archivo
+    RCL BL, 1 ; guardamos el registro de banderas
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE error
+    JMP abrirArchivo
+
+    error: 
+        MostrarTexto saltoLinea
+        MostrarTexto textoErrorArchivo
+        CapturarOpcion
+    
+    abrirArchivo:
+
+
+ENDM
+
+CerrarArchi MACRO handle
+    LOCAL error, CerrarArchivo
+
+    MOV AH, 3Eh ; cerrar archivo
+    MOV BX, handle ; manejador del archivo
+    INT 21h ; llamada a la interrupcion
+
+    MOV BL, 0
+    RCL BL, 1 ; guardamos el registro de banderas
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE error
+    JMP CerrarArchivo
+
+    error: 
+        MostrarTexto saltoLinea
+        MostrarTexto textoErrorArchivo
+        CapturarOpcion
+
+    CerrarArchivo:
+
+ENDM
+
+LeerArchi MACRO buffer, handle
+    LOCAL error, leerArchivo
+
+    MOV AH, 3Fh ; leer archivo
+    MOV BX, handle ; manejador del archivo
+    MOV CX, 70 ; cantidad de bytes a leer
+    LEA DX, buffer ; dirección del buffer
+    INT 21h ; llamada a la interrupción
+
+    MOV BL, 0
+    RCL BL, 1 ; guardamos el registro de banderas
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE error
+    JMP leerArchivo
+
+    error: 
+        MostrarTexto saltoLinea
+        MostrarTexto textoErrorArchivo
+        CapturarOpcion
+    
+    leerArchivo:
+    
+ENDM
+
+EscribirArchi MACRO archivo, handle
+
+    LOCAL error, escribirArchivo
+
+    MOV AH, 40h ; escribir en archivo
+    MOV BX, handle ; manejador del archivo
+    MOV CX, 56 ; cantidad de bytes a escribir
+    LEA DX, archivo ; dirección del archivo
+    INT 21h ; llamada a la interrupción
+
+    RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1 ; si hay un error, refrescar a la etiqueta error
+    CMP BL, 1
+    JE error
+    JMP escribirArchivo
+
+    error: 
+        MostrarTexto saltoLinea
+        MostrarTexto textoErrorArchivo
+        CapturarOpcion
+    
+    escribirArchivo:
+    
+ENDM
+
+
 .MODEL small
 
 .STACK 64h
@@ -177,6 +306,11 @@ ENDM
     textoNombreJugador db "Ingrese su nombre: ", "$"
     nombreJugador db 10 dup(' '),'$'
     textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
+    handleArchivo dw ? 
+    textoArchivo db "puntajes.txt", 0
+    textoErrorArchivo db "Error con el archivo", '$'
+    buffer db 70 dup("$")
+    contenidoPrueba db "Este es un texto de prueba a almacenar"
 
 .CODE
 
