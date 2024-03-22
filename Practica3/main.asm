@@ -162,8 +162,7 @@ CapturarNombre MACRO regNombre
     INT 21h
 ENDM
 
-NuevoArchivo MACRO nombreArchivo, handle
-
+NuevoArchivo MACRO nombreArchivo, handleArchivo
     LOCAL errorNuevo, crearArchivo
 
     MOV AH, 3ch; interrupcion para crear un archivo
@@ -171,7 +170,7 @@ NuevoArchivo MACRO nombreArchivo, handle
     LEA DX, nombreArchivo ; nombre del archivo
     INT 21h ; llamada a la interrupcion
 
-    MOV handle, AX ; guardamos el manejador del archivo
+    MOV handleArchivo, AX ; guardamos el manejador del archivo
     RCL BL, 1 ; guardamos el registro de banderas
     AND BL, 1 
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
@@ -181,12 +180,12 @@ NuevoArchivo MACRO nombreArchivo, handle
     errorNuevo: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
-        CapturarOpcion
+        CapturarOpcion seleccion
 
     crearArchivo:
 ENDM
 
-AbrirArchi MACRO nombreArchivo, handle
+AbrirArchi MACRO nombreArchivo, handleArchivo
 
     LOCAL errorAbrir, abrirArchivo
     
@@ -197,7 +196,7 @@ AbrirArchi MACRO nombreArchivo, handle
     LEA DX, nombreArchivo ; nombre del archivo
     INT 21h ; llamada a la interrupcion
 
-    MOV handle, AX ; guardamos el manejador del archivo
+    MOV handleArchivo, AX ; guardamos el manejador del archivo
     RCL BL, 1 ; guardamos el registro de banderas
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
     JE errorAbrir
@@ -206,18 +205,18 @@ AbrirArchi MACRO nombreArchivo, handle
     errorAbrir: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
-        CapturarOpcion
+        CapturarOpcion seleccion
     
     abrirArchivo:
 
 
 ENDM
 
-CerrarArchi MACRO handle
+CerrarArchi MACRO handleArchivo
     LOCAL errorCerrar, CerrarArchivo
 
     MOV AH, 3Eh ; cerrar archivo
-    MOV BX, handle ; manejador del archivo
+    MOV BX, handleArchivo ; manejador del archivo
     INT 21h ; llamada a la interrupcion
 
     RCL BL, 1 ; guardamos el registro de banderas
@@ -229,17 +228,17 @@ CerrarArchi MACRO handle
     errorCerrar: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
-        CapturarOpcion
+        CapturarOpcion seleccion
 
     CerrarArchivo:
 
 ENDM
 
-LeerArchi MACRO buffer, handle
+LeerArchi MACRO buffer, handleArchivo
     LOCAL errorLeer, leerArchivo
 
     MOV AH, 3Fh ; leer archivo
-    MOV BX, handle ; manejador del archivo
+    MOV BX, handleArchivo ; manejador del archivo
     MOV CX, 300 ; cantidad de bytes a leer
     LEA DX, buffer ; dirección del buffer
     INT 21h ; llamada a la interrupción
@@ -253,18 +252,17 @@ LeerArchi MACRO buffer, handle
     errorLeer: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
-        CapturarOpcion
+        CapturarOpcion seleccion
     
     leerArchivo:
     
 ENDM
 
-EscribirArchi MACRO archivo, handle
-
+EscribirArchi MACRO archivo, handleArchivo
     LOCAL errorEscribir, escribirArchivo
 
     MOV AH, 40h ; escribir en archivo
-    MOV BX, handle ; manejador del archivo
+    MOV BX, handleArchivo ; manejador del archivo
     MOV CX, 120 ; cantidad de bytes a escribir
     LEA DX, archivo ; dirección del archivo
     INT 21h ; llamada a la interrupción
@@ -278,7 +276,7 @@ EscribirArchi MACRO archivo, handle
     errorEscribir: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
-        CapturarOpcion
+        CapturarOpcion seleccion
     
     escribirArchivo:
     
@@ -290,8 +288,9 @@ ENDM
 .STACK 64h
 
 .DATA
-    saltoLinea db 10, 13, "$"
-    textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "$"
+    saltoLinea db 10, 13, "$" 
+    textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", "$"
+    textoInicio1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13,"$"
     textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
     seleccion db 1 dup("32"); 32 es vacío en ASCII
     tituloColumnas db "  A B C D E F G H", "$"
@@ -300,8 +299,8 @@ ENDM
     textoNombreJugador db "Ingrese su nombre: ", "$"
     nombreJugador db 10 dup(' '),'$'
     textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
-    handleArchivo dw ? 
-    nombreArchivo db "puntajes.txt", 00h
+    handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
+    nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
     textoErrorArchivo db "Error con el archivo", '$'
     buffer db 300 dup("$")
     contenidoPrueba db "Este es un texto de prueba a almacenar"
@@ -314,6 +313,7 @@ ENDM
     Principal PROC
         BorrarPantalla
         MostrarTexto textoInicio
+        MostrarTexto textoInicio1
 
         Menu:
             MostrarTexto textoMenu
@@ -353,12 +353,14 @@ ENDM
             CapturarOpcion seleccion
             JMP Menu
 
-        SalidaRapida:
+        
+        SalidaRapida: ; Salida rápida (salto corto)
             JMP Salida
+
 
         MostrarReportes:
             NuevoArchivo nombreArchivo, handleArchivo
-            CMP seleccion, 13
+            CMP seleccion, 13 ;verificamos que no exista error
             JE SalidaRapida
 
             EscribirArchi contenidoPrueba, handleArchivo
