@@ -164,11 +164,7 @@ ENDM
 
 NuevoArchivo MACRO nombreArchivo, handle
 
-
-
-    LOCAL error, crearArchivo
-
-    MOV BL, 0
+    LOCAL errorNuevo, crearArchivo
 
     MOV AH, 3ch; interrupcion para crear un archivo
     MOV CX, 00h ; atributos del archivo
@@ -177,24 +173,22 @@ NuevoArchivo MACRO nombreArchivo, handle
 
     MOV handle, AX ; guardamos el manejador del archivo
     RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1 
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
-    JE error
+    JE errorNuevo
     JMP crearArchivo
 
-    error: 
+    errorNuevo: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
         CapturarOpcion
 
     crearArchivo:
-
-
-
 ENDM
 
 AbrirArchi MACRO nombreArchivo, handle
 
-    LOCAL error, abrirArchivo
+    LOCAL errorAbrir, abrirArchivo
     
     MOV BL, 0
 
@@ -206,10 +200,10 @@ AbrirArchi MACRO nombreArchivo, handle
     MOV handle, AX ; guardamos el manejador del archivo
     RCL BL, 1 ; guardamos el registro de banderas
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
-    JE error
+    JE errorAbrir
     JMP abrirArchivo
 
-    error: 
+    errorAbrir: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
         CapturarOpcion
@@ -220,19 +214,19 @@ AbrirArchi MACRO nombreArchivo, handle
 ENDM
 
 CerrarArchi MACRO handle
-    LOCAL error, CerrarArchivo
+    LOCAL errorCerrar, CerrarArchivo
 
     MOV AH, 3Eh ; cerrar archivo
     MOV BX, handle ; manejador del archivo
     INT 21h ; llamada a la interrupcion
 
-    MOV BL, 0
     RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
-    JE error
+    JE errorCerrar
     JMP CerrarArchivo
 
-    error: 
+    errorCerrar: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
         CapturarOpcion
@@ -242,21 +236,21 @@ CerrarArchi MACRO handle
 ENDM
 
 LeerArchi MACRO buffer, handle
-    LOCAL error, leerArchivo
+    LOCAL errorLeer, leerArchivo
 
     MOV AH, 3Fh ; leer archivo
     MOV BX, handle ; manejador del archivo
-    MOV CX, 70 ; cantidad de bytes a leer
+    MOV CX, 300 ; cantidad de bytes a leer
     LEA DX, buffer ; dirección del buffer
     INT 21h ; llamada a la interrupción
 
     MOV BL, 0
     RCL BL, 1 ; guardamos el registro de banderas
     CMP BL, 1; si hay un error, refrescar a la etiqueta error
-    JE error
+    JE errorLeer
     JMP leerArchivo
 
-    error: 
+    errorLeer: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
         CapturarOpcion
@@ -267,21 +261,21 @@ ENDM
 
 EscribirArchi MACRO archivo, handle
 
-    LOCAL error, escribirArchivo
+    LOCAL errorEscribir, escribirArchivo
 
     MOV AH, 40h ; escribir en archivo
     MOV BX, handle ; manejador del archivo
-    MOV CX, 56 ; cantidad de bytes a escribir
+    MOV CX, 120 ; cantidad de bytes a escribir
     LEA DX, archivo ; dirección del archivo
     INT 21h ; llamada a la interrupción
 
     RCL BL, 1 ; guardamos el registro de banderas
     AND BL, 1 ; si hay un error, refrescar a la etiqueta error
     CMP BL, 1
-    JE error
+    JE errorEscribir
     JMP escribirArchivo
 
-    error: 
+    errorEscribir: 
         MostrarTexto saltoLinea
         MostrarTexto textoErrorArchivo
         CapturarOpcion
@@ -297,7 +291,7 @@ ENDM
 
 .DATA
     saltoLinea db 10, 13, "$"
-    textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10, 13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", 10, 13, "SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13, "$"
+    textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "$"
     textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
     seleccion db 1 dup("32"); 32 es vacío en ASCII
     tituloColumnas db "  A B C D E F G H", "$"
@@ -307,9 +301,9 @@ ENDM
     nombreJugador db 10 dup(' '),'$'
     textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
     handleArchivo dw ? 
-    textoArchivo db "puntajes.txt", 0
+    nombreArchivo db "puntajes.txt", 00h
     textoErrorArchivo db "Error con el archivo", '$'
-    buffer db 70 dup("$")
+    buffer db 300 dup("$")
     contenidoPrueba db "Este es un texto de prueba a almacenar"
 
 .CODE
@@ -328,16 +322,22 @@ ENDM
             CMP seleccion, 49 ; 49 es el valor ASCII de 1, estamos estimulando el registro de banderas
             JE MostrarTablero
             
-            CMP seleccion, 50 ; 50 es el valor ASCII de 2, estamos estimulando el registro de banderas
-            JE MostrarPuntajes
+            ;CMP seleccion, 50 ; 50 es el valor ASCII de 2, estamos estimulando el registro de banderas
+            ;JE MostrarPuntajes
 
             CMP seleccion, 51 ; 51 es el valor ASCII de 3, estamos estimulando el registro de banderas
-            JE MostrarReportes
+            JE MostrarReportes1
 
             CMP seleccion, 52 ; 52 es el valor ASCII de 4, estamos estimulando el registro de banderas
-            JE Salida
+            JE SalidaRapida2
                         
             JMP Menu
+
+        SalidaRapida2:
+            JMP Salida
+        
+        MostrarReportes1:
+            JMP MostrarReportes
 
         MostrarTablero:
             BorrarPantalla
@@ -350,12 +350,27 @@ ENDM
             MostrarTexto saltoLinea
             RellenarTablero
             DibujarTablero
+            CapturarOpcion seleccion
+            JMP Menu
 
-        MostrarPuntajes:
-
+        SalidaRapida:
+            JMP Salida
 
         MostrarReportes:
+            NuevoArchivo nombreArchivo, handleArchivo
+            CMP seleccion, 13
+            JE SalidaRapida
 
+            EscribirArchi contenidoPrueba, handleArchivo
+            CMP seleccion, 13
+            JE SalidaRapida3
+
+            CerrarArchi handleArchivo
+            CMP seleccion, 13
+            JE SalidaRapida3
+
+        SalidaRapida3:
+            JMP Salida
 
         Salida: 
             MOV AX, 4C00h ;terminar el programa(interrupción)
