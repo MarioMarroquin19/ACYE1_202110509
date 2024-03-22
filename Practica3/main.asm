@@ -186,7 +186,6 @@ NuevoArchivo MACRO nombreArchivo, handleArchivo
 ENDM
 
 AbrirArchi MACRO nombreArchivo, handleArchivo
-
     LOCAL errorAbrir, abrirArchivo
     
     MOV BL, 0
@@ -282,6 +281,15 @@ EscribirArchi MACRO archivo, handleArchivo
     
 ENDM
 
+PosicionFinalApuntador MACRO handleArchivo
+    MOV AH, 42h ; mover el apuntador de archivo
+    MOV AL, 02h ; desde el final
+    MOV BX, handleArchivo ; manejador del archivo
+    MOV CX, 00h ; desplazamiento
+    MOV DX, 00h ; desplazamiento
+    INT 21h ; llamada a la interrupción
+    
+ENDM
 
 .MODEL small
 
@@ -302,8 +310,9 @@ ENDM
     handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
     nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
     textoErrorArchivo db "Error con el archivo", '$'
-    buffer db 300 dup("$")
+    buffer db 300 dup("$"); solo para leer un archivo
     contenidoPrueba db "Este es un texto de prueba a almacenar"
+    textoCreacion db 10,13,"Archivo creado", "$"
 
 .CODE
 
@@ -363,6 +372,7 @@ ENDM
             CMP seleccion, 13 ;verificamos que no exista error
             JE SalidaRapida
 
+            ;PosicionFinalApuntador handleArchivo
             EscribirArchi contenidoPrueba, handleArchivo
             CMP seleccion, 13
             JE SalidaRapida3
@@ -370,11 +380,30 @@ ENDM
             CerrarArchi handleArchivo
             CMP seleccion, 13
             JE SalidaRapida3
+            JMP SeguirArchivos
 
         SalidaRapida3:
             JMP Salida
 
+        SeguirArchivos: 
+            MostrarTexto textoCreacion
+            CapturarOpcion seleccion
+
+            AbrirArchi nombreArchivo, handleArchivo
+            CMP seleccion, 13
+            JE SalidaRapida3
+
+            LeerArchi buffer, handleArchivo
+            CMP seleccion, 13
+            JE Salida
+
+            CerrarArchi handleArchivo
+            CMP seleccion, 13
+            JE Salida
+
+
         Salida: 
+            MostrarTexto buffer
             MOV AX, 4C00h ;terminar el programa(interrupción)
             INT 21h
 
