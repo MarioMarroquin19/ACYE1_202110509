@@ -22,6 +22,8 @@ DibujarTablero MACRO
     XOR SI, SI ; índice del tablero (0-63)
 
     MostrarTexto tituloColumnas
+    MostrarTexto saltoLinea
+    MostrarTexto serparacionColumnas
     MOV CL, 0; índice de la columna (A-H)
 
     filaActual: 
@@ -51,6 +53,11 @@ DibujarTablero MACRO
 
             CMP BX, 8; Si no ha pasado por todas las filas que refrese a la etiqueta filaActual
             JB filaActual
+    
+    MostrarTexto saltoLinea
+    MostrarTexto serparacionColumnas
+    MostrarTexto saltoLinea
+    MostrarTexto tituloColumnas
             
 ENDM
 
@@ -157,7 +164,7 @@ ENDM
 CapturarNombre MACRO regNombre
     MOV AH, 3fh
     MOV BX, 00H
-    MOV CX, 10
+    MOV CX, 5
     MOV DX, OFFSET regNombre
     INT 21h
 ENDM
@@ -291,6 +298,22 @@ PosicionFinalApuntador MACRO handleArchivo
     
 ENDM
 
+RowMajorMatriz MACRO
+    MOV AL, row
+    MOV BL, col
+    
+    SUB AL, 49
+    SUB BL, 65
+    
+    MOV BH, 8
+    
+    MUL BH
+    ADD AL, BL
+    
+    MOV SI, AX
+    MOV tablero[SI], 120
+ENDM
+
 .MODEL small
 
 .STACK 64h
@@ -301,11 +324,16 @@ ENDM
     textoInicio1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13,"$"
     textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
     seleccion db 1 dup(32); 32 es vacío en ASCII
+    filaPosible db 1 dup(32), "$"
+    columnaPosible db 1 dup(32), "$"
+    filaMov db 1 dup(32), "$"
+    columnaMov db 1 dup(32), "$"
     tituloColumnas db "  A B C D E F G H", "$"
+    serparacionColumnas db " |-|-|-|-|-|-|-|-|", "$"
     etiquetaFila db "12345678", "$"
     tablero db 64 dup(32) ; row-major o column-major
-    textoNombreJugador db "Ingrese su nombre: ", "$"
-    nombreJugador db 10 dup(' '),'$'
+    textoNombreJugador db "Ingrese nickname (5 letras): ", "$"
+    nombreJugador db 5 dup(' '),'$'; 5 caracteres para el nombre
     textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
     handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
     nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
@@ -313,6 +341,10 @@ ENDM
     textoCreacion db 10, 13, "El Archivo Se Creo Correctamente", "$"
     contenidoPrueba db "Este es un texto de prueba para escribir en los archivos"
     buffer db 300 dup("$") ; Buffer para almacenar el contenido leido de un archivo
+    textoIngreseFila db "Ingrese la fila: ", "$"
+    textoIngreseColumna db "Ingrese la columna: ", "$"
+    row db 1 dup("$")
+    col db 1 dup("$")
 
 .CODE
 
@@ -359,7 +391,32 @@ ENDM
             MostrarTexto saltoLinea
             RellenarTablero
             DibujarTablero
-            CapturarOpcion seleccion
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
+            MostrarTexto textoIngreseFila
+            CapturarOpcion filaPosible
+            MostrarTexto saltoLinea
+            MostrarTexto textoIngreseColumna
+            CapturarOpcion columnaPosible
+            MostrarTexto saltoLinea
+            ;MostrarTexto filaPosible ; ver la fila para mostara el movimiento de la pieza
+            ;MostrarTexto columnaPosible ; ver la columna para mostrar el movimiento de la pieza
+
+            ; aqui poner de nuevo el tablero con los movimientos posibles de dicha pieza
+
+
+            MostrarTexto textoIngreseFila
+            CapturarOpcion filaMov ; elegir uno de los movimientos posibles
+            MostrarTexto saltoLinea
+            MostrarTexto textoIngreseColumna
+            CapturarOpcion columnaMov
+            MostrarTexto saltoLinea
+
+            ; aqui poner de nuevo el tablero con el movimiento de la pieza
+
+
+
+            ;CapturarOpcion seleccion
             JMP Menu
 
         

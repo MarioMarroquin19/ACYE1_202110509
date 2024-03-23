@@ -1,2 +1,1 @@
-Este es un texto de prueba para escribir en los archivos, seguimos con la lectura de nuevos caracteres, a ver que sale
-con este salto de linea
+Este es un texto de prueba para escribir en los archivos
