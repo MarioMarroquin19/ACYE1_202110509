@@ -262,7 +262,7 @@ EscribirArchi MACRO archivo, handleArchivo
 
     MOV AH, 40h ; escribir en archivo
     MOV BX, handleArchivo ; manejador del archivo
-    MOV CX, 120 ; cantidad de bytes a escribir
+    MOV CX, 56 ; cantidad de bytes a escribir, debe irse modificando dependiendo de cuanto vamos a escribir, si no salen simbolos raros
     LEA DX, archivo ; dirección del archivo
     INT 21h ; llamada a la interrupción
 
@@ -300,7 +300,7 @@ ENDM
     textoInicio db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", "$"
     textoInicio1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13,"$"
     textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
-    seleccion db 1 dup("32"); 32 es vacío en ASCII
+    seleccion db 1 dup(32); 32 es vacío en ASCII
     tituloColumnas db "  A B C D E F G H", "$"
     etiquetaFila db "12345678", "$"
     tablero db 64 dup(32) ; row-major o column-major
@@ -310,9 +310,9 @@ ENDM
     handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
     nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
     textoErrorArchivo db "Error con el archivo", '$'
-    buffer db 300 dup("$"); solo para leer un archivo
-    contenidoPrueba db "Este es un texto de prueba a almacenar"
-    textoCreacion db 10,13,"Archivo creado", "$"
+    textoCreacion db 10, 13, "El Archivo Se Creo Correctamente", "$"
+    contenidoPrueba db "Este es un texto de prueba para escribir en los archivos"
+    buffer db 300 dup("$") ; Buffer para almacenar el contenido leido de un archivo
 
 .CODE
 
