@@ -311,7 +311,7 @@ RowMajorMatriz MACRO
     ADD AL, BL
     
     MOV SI, AX
-    MOV tablero[SI], 120
+    MOV tablero[SI], 64
 ENDM
 
 MovimientoPiezas MACRO 
@@ -331,27 +331,94 @@ MovimientoPiezas MACRO
     MOV SI, AX
 
     ; Verificar qué pieza está en esa posición
-    CMP tablero[SI], 80 ; Si es un peón blanco (80 en ASCII)
+
+    CMP tablero[SI], 84 ; Si es un torre (T en ASCII)
+    JE VerificarCasillaTorreAdelante
+
+    CMP tablero[SI], 67 ; Si es un caballo (C en ASCII)
+
+
+    CMP tablero[SI], 65 ; Si es un alfil (A en ASCII)
+
+
+    CMP tablero[SI], 82 ; Si es un rey  (R en ASCII)
+
+
+    CMP tablero[SI], 42 ; Si es una reina (* en ASCII)
+
+
+    CMP tablero[SI], 80 ; Si es un peón blanco (P en ASCII)
     JE VerificarCasillaPeonAdelante
-    JMP SalidaMOV
+
+
 
     VerificarCasillaPeonAdelante:
-        SUB AL, 8 ; Restar 8 a AL
-        MOV SI, AX
-        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
-        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-        ;JE MoverPeonBlanco
-
-        MOV AL, DL ; Restaurar el valor original de AL
         SUB AL, 16; Restar 16 a AL
         MOV SI, AX
         CMP tablero[SI], 32 ; Verifica si la casilla está vacía
-        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-        ;JE MoverPeonBlanco
+        JE MoverPeonBlanco
+
+        MOV AL, DL ; Restaurar el valor original de AL
+        SUB AL, 8; Restar 8 a AL
+        MOV SI, AX
+        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+        JE MoverPeonBlanco
 
         JMP SalidaMOV
     
+        MoverPeonBlanco:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            MOV AL, DL ; Restaurar el valor original de AL
+            SUB AL, 8; Restar 8 a AL
+            MOV SI, AX
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP SalidaMOV
     
+    VerificarCasillaTorreAdelante:
+        MOV AL, DL ; Restaurar el valor original de AL
+        SUB AL, 8; Restar 8 a AL
+        MOV CL, 8
+        MOV SI, AX
+        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+        JE MoverTorreBlancaAdelante
+        JMP SalidaMOV
+        
+        MoverTorreBlancaAdelante:
+            MOV AL, DL ; Restaurar el valor original de AL
+            SUB AL, CL; Restar CL a AL
+            ADD CL, 8; CL = CL + 8	
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XTorreBlanca
+            JMP VerificarCasillaTorreDerecha
+
+        XTorreBlanca:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverTorreBlancaAdelante
+        
+    VerificarCasillaTorreDerecha:
+        MOV AL, DL ; Restaurar el valor original de AL
+        ADD AL, 1; Sumar 1 a AL
+        MOV CL, 1
+        MOV SI, AX
+        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+        JE MoverTorreBlancaDerecha
+        JMP SalidaMOV
+        
+        MoverTorreBlancaDerecha:
+            MOV AL, DL ; Restaurar el valor original de AL
+            ADD AL, CL; Sumar CL a AL
+            INC CL; CL++
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XTorreBlancaDerecha
+            JMP SalidaMOV
+
+        XTorreBlancaDerecha:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverTorreBlancaDerecha
+
+
     SalidaMOV:
 
 ENDM
@@ -386,6 +453,8 @@ ENDM
     buffer db 300 dup("$") ; Buffer para almacenar el contenido leido de un archivo
     textoIngreseFila db "Ingrese la fila: ", "$"
     textoIngreseColumna db "Ingrese la columna (letra minuscula): ", "$"
+    textoMovimientos db "Seleccione una pieza para visualizar los posibles movimientos", "$"
+    textoMovimiento db "Elija el movimiento a realizar", "$"
 
 .CODE
 
@@ -434,20 +503,26 @@ ENDM
             DibujarTablero
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
+            MostrarTexto textoMovimientos
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             MostrarTexto textoIngreseFila
             CapturarOpcion filaPosible
             MostrarTexto saltoLinea
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaPosible
             MostrarTexto saltoLinea
-            ;MostrarTexto filaPosible ; ver la fila para mostara el movimiento de la pieza
-            ;MostrarTexto columnaPosible ; ver la columna para mostrar el movimiento de la pieza
+            MostrarTexto saltoLinea
 
             ; aqui poner de nuevo el tablero con los movimientos posibles de dicha pieza
             MovimientoPiezas
-            ;RellenarTablero
             DibujarTablero
 
+
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
+            MostrarTexto textoMovimiento
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             MostrarTexto textoIngreseFila
@@ -455,6 +530,7 @@ ENDM
             MostrarTexto saltoLinea
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaMov
+            MostrarTexto saltoLinea
             MostrarTexto saltoLinea
 
             ; aqui poner de nuevo el tablero con el movimiento de la pieza
