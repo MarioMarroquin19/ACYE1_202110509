@@ -339,19 +339,18 @@ MovimientoPiezas MACRO
         SUB AL, 8 ; Restar 8 a AL
         MOV SI, AX
         CMP tablero[SI], 32 ; Verifica si la casilla está vacía
-        JE MoverPeonBlanco
+        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+        ;JE MoverPeonBlanco
 
         MOV AL, DL ; Restaurar el valor original de AL
         SUB AL, 16; Restar 16 a AL
         MOV SI, AX
-        MOV tablero[SI], 32 ; Verifica si la casilla está vacía
-        JE MoverPeonBlanco
+        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+        ;JE MoverPeonBlanco
 
         JMP SalidaMOV
     
-    MoverPeonBlanco:
-        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-        
     
     SalidaMOV:
 
