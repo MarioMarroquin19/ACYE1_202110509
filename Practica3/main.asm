@@ -298,12 +298,12 @@ PosicionFinalApuntador MACRO handleArchivo
     
 ENDM
 
-RowMajorMatriz MACRO
-    MOV AL, row
-    MOV BL, col
+RowMajorMatriz MACRO 
+    MOV AL, filaPosible
+    MOV BL, columnaPosible
     
     SUB AL, 49
-    SUB BL, 65
+    SUB BL, 97
     
     MOV BH, 8
     
@@ -313,6 +313,50 @@ RowMajorMatriz MACRO
     MOV SI, AX
     MOV tablero[SI], 120
 ENDM
+
+MovimientoPiezas MACRO 
+    MOV AL, filaPosible
+    MOV BL, columnaPosible
+    
+    SUB AL, 49
+    SUB BL, 97
+    
+    MOV BH, 8
+    
+    MUL BH
+    ADD AL, BL
+    MOV DL, AL ; Guardar el valor original de AL
+    
+    ; Después de la operación row-major
+    MOV SI, AX
+
+    ; Verificar qué pieza está en esa posición
+    CMP tablero[SI], 80 ; Si es un peón blanco (80 en ASCII)
+    JE VerificarCasillaPeonAdelante
+    JMP SalidaMOV
+
+    VerificarCasillaPeonAdelante:
+        SUB AL, 8 ; Restar 8 a AL
+        MOV SI, AX
+        CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+        JE MoverPeonBlanco
+
+        MOV AL, DL ; Restaurar el valor original de AL
+        SUB AL, 16; Restar 16 a AL
+        MOV SI, AX
+        MOV tablero[SI], 32 ; Verifica si la casilla está vacía
+        JE MoverPeonBlanco
+
+        JMP SalidaMOV
+    
+    MoverPeonBlanco:
+        MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+        
+    
+    SalidaMOV:
+
+ENDM
+
 
 .MODEL small
 
@@ -324,8 +368,8 @@ ENDM
     textoInicio1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10, 13, "Practica 3",10,13,10,13,"$"
     textoMenu db 10,13,"-----MENU PRINCIPAL-----", 10, 13, "1.Nuevo Juego", 10, 13, "2.Puntajes", 10, 13, "3.Reportes", 10, 13, "4.Salir", 10, 13, ">>Ingrese una opcion: ", "$"
     seleccion db 1 dup(32); 32 es vacío en ASCII
-    filaPosible db 1 dup(32), "$"
-    columnaPosible db 1 dup(32), "$"
+    filaPosible db 1 dup("$")
+    columnaPosible db 1 dup("$")
     filaMov db 1 dup(32), "$"
     columnaMov db 1 dup(32), "$"
     tituloColumnas db "  A B C D E F G H", "$"
@@ -342,9 +386,7 @@ ENDM
     contenidoPrueba db "Este es un texto de prueba para escribir en los archivos"
     buffer db 300 dup("$") ; Buffer para almacenar el contenido leido de un archivo
     textoIngreseFila db "Ingrese la fila: ", "$"
-    textoIngreseColumna db "Ingrese la columna: ", "$"
-    row db 1 dup("$")
-    col db 1 dup("$")
+    textoIngreseColumna db "Ingrese la columna (letra minuscula): ", "$"
 
 .CODE
 
@@ -403,8 +445,12 @@ ENDM
             ;MostrarTexto columnaPosible ; ver la columna para mostrar el movimiento de la pieza
 
             ; aqui poner de nuevo el tablero con los movimientos posibles de dicha pieza
+            MovimientoPiezas
+            ;RellenarTablero
+            DibujarTablero
 
-
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             MostrarTexto textoIngreseFila
             CapturarOpcion filaMov ; elegir uno de los movimientos posibles
             MostrarTexto saltoLinea
