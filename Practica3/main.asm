@@ -341,7 +341,7 @@ MovimientoPiezas MACRO
 
     CMP tablero[SI], 67 ; Si es un caballo (C en ASCII)
     MOV CH, 67; CH = C en ASCII
-
+    JE VerificarCasillaCaballo
 
     CMP tablero[SI], 65 ; Si es un alfil (A en ASCII)
     MOV CH, 65; CH = A en ASCII
@@ -359,6 +359,148 @@ MovimientoPiezas MACRO
     MOV CH, 80; CH = P en ASCII
     JE VerificarCasillaPeonAdelante
 
+
+    VerificarCasillaCaballo:
+        MOV AL, DL ; Restaurar el valor original de AL
+        MOV BL, DH ; Restaurar el valor original de BL
+        SUB AL, 16; Restar 16 a AL
+
+        CMP BL,7
+        JB MoverCaballoAdelanteDerecha
+        JMP Izqui2
+
+        Izqui2:
+            CMP BL, 0
+            JA MoverCaballoAdelanteIzquierda
+            JMP MoverCaballoAtrasDerecha
+
+        MoverCaballoAdelanteDerecha:
+            ADD AL, 1
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoAdelanteDerecha
+            JMP Izqui2
+
+        MoverCaballoAdelanteIzquierda:
+            MOV AL, DL ; Restaurar el valor original de AL
+            SUB AL, 16
+            SUB AL, 1
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoAdelanteIzquierda
+            JMP MoverCaballoAtrasDerecha
+
+        XMoverCaballoAdelanteDerecha:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            CMP BL, 0
+            JA MoverCaballoAdelanteIzquierda
+            JMP MoverCaballoAtrasDerecha
+        
+        XMoverCaballoAdelanteIzquierda:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverCaballoAtrasDerecha
+
+        MoverCaballoAtrasDerecha:
+            MOV AL, DL ; Restaurar el valor original de AL
+            ADD AL, 16
+
+            CMP BL, 7
+            JB MoverCaballoAtrasDerechaX
+            JMP AtrasIzquierda 
+
+            AtrasIzquierda:
+                CMP BL, 0
+                JA MoverCaballoAtrasIzquierda
+                JMP MoverCaballoDerecha
+
+            MoverCaballoAtrasDerechaX:
+                ADD AL, 1
+                MOV SI, AX
+                CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+                JE XMoverCaballoAtrasDerecha
+                JMP AtrasIzquierda
+
+            XMoverCaballoAtrasDerecha:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                CMP BL, 0
+                JA MoverCaballoAtrasIzquierda
+                JMP MoverCaballoDerecha
+            
+            MoverCaballoAtrasIzquierda:
+                MOV AL, DL ; Restaurar el valor original de AL
+                ADD AL, 16
+                SUB AL, 1
+                MOV SI, AX
+                CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+                JE XMoverCaballoAtrasIzquierda
+                JMP MoverCaballoDerecha
+            
+            XMoverCaballoAtrasIzquierda:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                JMP MoverCaballoDerecha
+
+    MoverCaballoDerecha:
+        MOV AL, DL
+        ADD AL, 2
+
+        CMP BL, 6
+        JB MoverCaballoDerechaArriba
+        JMP MoverCaballoIzq
+        
+        MoverCaballoDerechaArriba:
+            SUB AL, 8
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoDerechaArriba
+            JMP MoverCaballoDerechaAbajo
+
+        XMoverCaballoDerechaArriba:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverCaballoDerechaAbajo
+        
+        MoverCaballoDerechaAbajo:
+            MOV AL, DL
+            ADD AL, 10
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoDerechaAbajo
+            JMP MoverCaballoIzq
+
+        XMoverCaballoDerechaAbajo:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverCaballoIzq
+
+    MoverCaballoIzq:
+        MOV AL, DL
+        SUB AL, 2
+
+        CMP BL, 1
+        JA MoverCaballoIzqArriba
+        JMP SalidaMOV
+        
+        MoverCaballoIzqArriba:
+            SUB AL, 8
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoIzqArriba
+            JMP MoverCaballoIzqAbajo
+
+        XMoverCaballoIzqArriba:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP MoverCaballoIzqAbajo
+        
+        MoverCaballoIzqAbajo:
+            MOV AL, DL
+            SUB AL, 2
+            ADD AL, 8
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverCaballoIzqAbajo
+            JMP SalidaMOV
+
+        XMoverCaballoIzqAbajo:
+            MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+            JMP SalidaMOV
 
 
     VerificarCasillaPeonAdelante:
@@ -482,7 +624,6 @@ MovimientoPiezas MACRO
         XTorreBlancaIzquierda:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP movimientoColumnaIzquierda
-
 
     SalidaMOV:
 
