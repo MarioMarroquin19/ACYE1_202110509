@@ -445,10 +445,53 @@ MoverPieza MACRO
     ; Después de la operación row-major
     MOV SI, AX; a donde estoy moviendo la pieza
 
-    ; Verificar qué pieza está en esa posición
+    ; Verificar qué pieza está en esa posición (P en ASCII)
     CMP CH, 80
     JE moverPeon
+
+    CMP CH, 84 ; Si es un torre (T en ASCII)
+    JE moverTorre
+
+    CMP CH, 67 ; Si es un caballo (C en ASCII)
+    JE moverCaballo
+
+    CMP CH, 65 ; Si es un alfil (A en ASCII)
+    JE moverAlfil
+
+    CMP CH, 82 ; Si es un rey  (R en ASCII)
+    JE moverRey
+
+    CMP CH, 42 ; Si es una reina (* en ASCII)
+    JE moverReina
+
     JMP SalidaMoverPieza
+
+    moverCaballo:
+
+    moverAlfil:
+
+    moverRey:
+
+    moverReina:
+
+    moverTorre:
+        MOV tablero[SI], 84
+
+        MOV AL, filaPosible
+        MOV BL, columnaPosible
+        
+        SUB AL, 49
+        SUB BL, 97
+        
+        MOV BH, 8
+        
+        MUL BH
+        ADD AL, BL
+        MOV SI, AX
+        MOV tablero[SI], 32
+
+        JMP SalidaMoverPieza
+
 
     moverPeon:
         MOV tablero[SI], 80
@@ -466,10 +509,31 @@ MoverPieza MACRO
         MOV SI, AX
         MOV tablero[SI], 32
 
+        JMP SalidaMoverPieza
+
     SalidaMoverPieza:
 
 ENDM
 
+LimpiarTablero MACRO
+    LOCAL RecorrerTablero, ReemplazarX
+
+    MOV SI, 0
+
+    RecorrerTablero:
+        MOV DL, tablero[SI]; recorrido del tablero
+        CMP DL, 120 ; Compara si el carácter es "x"
+        JE ReemplazarX
+        JNE Siguiente ; Si no es "x", salta a Siguiente
+
+    ReemplazarX:
+        MOV tablero[SI], 32; Reemplaza "x" por un espacio en blanco
+
+    Siguiente:
+        INC SI; incrementar SI en 1 -> SI++
+        CMP SI, 64 ; si no ha pasado por todas las casillas, refrescar a la etiqueta RecorrerTablero
+        JB RecorrerTablero; salto a RecorrerTablero si el índice es menor a 64
+ENDM
 
 .MODEL small
 
@@ -584,6 +648,9 @@ ENDM
             MostrarTexto saltoLinea
 
             ; aqui poner de nuevo el tablero con el movimiento de la pieza
+            LimpiarTablero
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             MoverPieza
             DibujarTablero
             MostrarTexto saltoLinea
