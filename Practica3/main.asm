@@ -333,21 +333,27 @@ MovimientoPiezas MACRO
     ; Verificar qué pieza está en esa posición
 
     CMP tablero[SI], 84 ; Si es un torre (T en ASCII)
+    MOV CH, 84; CH = T en ASCII
     JE VerificarCasillaTorreAdelante
 
     CMP tablero[SI], 67 ; Si es un caballo (C en ASCII)
+    MOV CH, 67; CH = C en ASCII
 
 
     CMP tablero[SI], 65 ; Si es un alfil (A en ASCII)
+    MOV CH, 65; CH = A en ASCII
 
 
     CMP tablero[SI], 82 ; Si es un rey  (R en ASCII)
+    MOV CH, 82; CH = R en ASCII
 
 
     CMP tablero[SI], 42 ; Si es una reina (* en ASCII)
+    MOV CH, 42; CH = * en ASCII
 
 
     CMP tablero[SI], 80 ; Si es un peón blanco (P en ASCII)
+    MOV CH, 80; CH = P en ASCII
     JE VerificarCasillaPeonAdelante
 
 
@@ -420,6 +426,47 @@ MovimientoPiezas MACRO
 
 
     SalidaMOV:
+
+ENDM
+
+MoverPieza MACRO 
+    MOV AL, filaMov
+    MOV BL, columnaMov
+    
+    SUB AL, 49
+    SUB BL, 97
+    
+    MOV BH, 8
+    
+    MUL BH
+    ADD AL, BL
+    MOV DL, AL ; Guardar el valor original de AL
+    
+    ; Después de la operación row-major
+    MOV SI, AX; a donde estoy moviendo la pieza
+
+    ; Verificar qué pieza está en esa posición
+    CMP CH, 80
+    JE moverPeon
+    JMP SalidaMoverPieza
+
+    moverPeon:
+        MOV tablero[SI], 80
+
+        MOV AL, filaPosible
+        MOV BL, columnaPosible
+        
+        SUB AL, 49
+        SUB BL, 97
+        
+        MOV BH, 8
+        
+        MUL BH
+        ADD AL, BL
+        MOV SI, AX
+        MOV tablero[SI], 32
+
+    SalidaMoverPieza:
 
 ENDM
 
@@ -503,6 +550,9 @@ ENDM
             DibujarTablero
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
+            JMP Jugar
+        
+        Jugar:
             MostrarTexto textoMovimientos
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
@@ -534,11 +584,15 @@ ENDM
             MostrarTexto saltoLinea
 
             ; aqui poner de nuevo el tablero con el movimiento de la pieza
-
+            MoverPieza
+            DibujarTablero
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
 
 
             ;CapturarOpcion seleccion
-            JMP Menu
+            JMP Jugar
 
         
         SalidaRapida: ; Salida rápida (salto corto)
