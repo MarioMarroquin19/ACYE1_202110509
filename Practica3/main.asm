@@ -345,7 +345,7 @@ MovimientoPiezas MACRO
 
     CMP tablero[SI], 65 ; Si es un alfil (A en ASCII)
     MOV CH, 65; CH = A en ASCII
-
+    JE VerificarCasillaAlfil
 
     CMP tablero[SI], 82 ; Si es un rey  (R en ASCII)
     MOV CH, 82; CH = R en ASCII
@@ -359,6 +359,67 @@ MovimientoPiezas MACRO
     MOV CH, 80; CH = P en ASCII
     JE VerificarCasillaPeonAdelante
 
+    VerificarCasillaAlfil:
+        MOV AL, DL ; Restaurar el valor original de AL
+        MOV BL, DH ; Restaurar el valor original de BL
+
+        MoverAlfilDerechaArriba:
+            SUB AL, 8
+            ADD AL, 1
+            MOV SI, AX
+            CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+            JE XMoverAlfilDerechaArriba
+            JMP MoverAlfilDerechaAbajo
+
+        
+            XMoverAlfilDerechaArriba:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                JMP MoverAlfilDerechaArriba            
+
+        MoverAlfilDerechaAbajo:
+            MOV AL, DL ; Restaurar el valor original de AL
+            JMP MoverAlfilDerechaAbajo1
+
+            MoverAlfilDerechaAbajo1:
+                ADD AL, 9
+                MOV SI, AX
+                CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+                JE XMoverAlfilDerechaAbajo
+                JMP MoverAlfilIzquierdaArriba
+
+            XMoverAlfilDerechaAbajo:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                JMP MoverAlfilDerechaAbajo1
+
+        MoverAlfilIzquierdaArriba:
+            MOV AL, DL ; Restaurar el valor original de AL
+            JMP MoverAlfilIzquierdaArriba1
+
+            MoverAlfilIzquierdaArriba1:
+                SUB AL, 9
+                MOV SI, AX
+                CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+                JE XMoverAlfilIzquierdaArriba
+                JMP MoverAlfilIzquierdaAbajo
+
+            XMoverAlfilIzquierdaArriba:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                JMP MoverAlfilIzquierdaArriba1
+
+        MoverAlfilIzquierdaAbajo:
+            MOV AL, DL ; Restaurar el valor original de AL
+            JMP MoverAlfilIzquierdaAbajo1
+
+            MoverAlfilIzquierdaAbajo1:
+                ADD AL, 7
+                MOV SI, AX
+                CMP tablero[SI], 32 ; Verifica si la casilla está vacía
+                JE XMoverAlfilIzquierdaAbajo
+                JMP SalidaMOV
+
+            XMoverAlfilIzquierdaAbajo:
+                MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
+                JMP MoverAlfilIzquierdaAbajo1
 
     VerificarCasillaCaballo:
         MOV AL, DL ; Restaurar el valor original de AL
