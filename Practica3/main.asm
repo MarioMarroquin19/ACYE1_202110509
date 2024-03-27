@@ -317,49 +317,40 @@ ENDM
 MovimientoPiezas MACRO 
     MOV AL, filaPosible
     MOV BL, columnaPosible
-    
     SUB AL, 49
     SUB BL, 97
-    
     MOV DH, BL ; Guardar el valor original de BL
-
     MOV BH, 8
-    
     MUL BH
     ADD AL, BL
     MOV DL, AL ; Guardar el valor original de AL
-    
-    
     ; Después de la operación row-major
     MOV SI, AX
-
     ; Verificar qué pieza está en esa posición
 
     CMP tablero[SI], 84 ; Si es un torre (T en ASCII)
     MOV CH, 84; CH = T en ASCII
-    JE VerificarCasillaTorreAdelante
+    JE AuxTorreAdelante111
 
     CMP tablero[SI], 67 ; Si es un caballo (C en ASCII)
     MOV CH, 67; CH = C en ASCII
-    JE VerificarCasillaCaballo
+    JE VerificarCasillaCaballo11
 
     CMP tablero[SI], 65 ; Si es un alfil (A en ASCII)
     MOV CH, 65; CH = A en ASCII
-    JE VerificarCasillaAlfil
+    JE VerificarCasillaAlfil11
 
     CMP tablero[SI], 82 ; Si es un rey  (R en ASCII)
     MOV CH, 82; CH = R en ASCII
-    JE VerificarCasillaRey
+    JE VerificarCasillaRey1
 
     CMP tablero[SI], 42 ; Si es una reina (* en ASCII)
     MOV CH, 42; CH = * en ASCII
     JE VerificarCasillaReina
 
-
     CMP tablero[SI], 80 ; Si es un peón blanco (P en ASCII)
     MOV CH, 80; CH = P en ASCII
-    JE VerificarCasillaPeonAdelante
-
+    JE AuxPeonAdelante
 
     VerificarCasillaReina:
         MOV AL, DL ; Restaurar el valor original de AL
@@ -372,6 +363,18 @@ MovimientoPiezas MACRO
             JE XMoverRArriba1
             MOV AL, DL ; Restaurar el valor original de AL
             JMP MoverRAbajo1
+        
+    AuxTorreAdelante111:
+        JMP AuxTorreAdelante11
+    
+    AuxPeonAdelante:
+        JMP AuxPeonAdelante1
+    
+    VerificarCasillaCaballo11:
+        JMP VerificarCasillaCaballo1
+    
+    VerificarCasillaAlfil11:
+        JMP VerificarCasillaAlfil1
 
             XMoverRArriba1:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
@@ -409,21 +412,36 @@ MovimientoPiezas MACRO
             MOV BL, DH ; Restaurar el valor original de BL
             JMP MoverRIzquierda1
 
+    VerificarCasillaRey1:
+        JMP VerificarCasillaRey11
+    
+    VerificarCasillaCaballo1:
+        JMP VerificarCasillaCaballo22
+    
+    VerificarCasillaAlfil1:
+        JMP VerificarCasillaAlfil22
+    
+    AuxTorreAdelante11:
+        JMP AuxTorreAdelante112
+    
+    AuxPeonAdelante1:
+        JMP AuxPeonAdelante2
+
         MoverRIzquierda1:
             SUB AL, 1
             SUB BL, 1
             CMP BL, 0
-            JL ReiniciarValoresRDiagonalArribaDerecha1
+            JL ReiniciarRDiagonalAD
             MOV SI, AX
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverRIzquierda1
-            JMP ReiniciarValoresRDiagonalArribaDerecha1
+            JMP ReiniciarRDiagonalAD
 
             XMoverRIzquierda1:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRIzquierda1
 
-        ReiniciarValoresRDiagonalArribaDerecha1:
+        ReiniciarRDiagonalAD:
             MOV AL, DL ; Restaurar el valor original de AL
             MOV BL, DH ; Restaurar el valor original de BL
             JMP MoverRDiagonalArribaDerecha1
@@ -432,17 +450,32 @@ MovimientoPiezas MACRO
             SUB AL, 7
             ADD BL, 1
             CMP BL, 7
-            JA ReiniciarValoresRDiagonalArribaIzquierda1
+            JA ReiniciarRDiagonalAIz
             MOV SI, AX
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverRDiagonalArribaDerecha1
-            JMP ReiniciarValoresRDiagonalArribaIzquierda1
+            JMP ReiniciarRDiagonalAIz
+
+    VerificarCasillaCaballo22:
+        JMP VerificarCasillaCaballo2
+    
+    VerificarCasillaAlfil22:
+        JMP VerificarCasillaAlfil2
+
+    AuxTorreAdelante112:
+        JMP AuxTorreAdelante1
+    
+    AuxPeonAdelante2:
+        JMP AuxPeonAdelante3
+    
+    VerificarCasillaRey11:
+        JMP VerificarCasillaRey2
 
             XMoverRDiagonalArribaDerecha1:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRDiagonalArribaDerecha1
         
-        ReiniciarValoresRDiagonalArribaIzquierda1:
+        ReiniciarRDiagonalAIz:
             MOV AL, DL ; Restaurar el valor original de AL
             MOV BL, DH ; Restaurar el valor original de BL
             JMP MoverRDiagonalArribaIzquierda1
@@ -460,7 +493,22 @@ MovimientoPiezas MACRO
             XMoverRDiagonalArribaIzquierda1:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRDiagonalArribaIzquierda1
-        
+    
+    VerificarCasillaRey2:
+        JMP VerificarCasillaRey
+
+    VerificarCasillaCaballo2:
+        JMP VerificarCasillaCaballo3
+
+    VerificarCasillaAlfil2:
+        JMP VerificarCasillaAlfil3
+
+    AuxTorreAdelante1:
+            JMP AuxTorreAdelante2
+
+    AuxPeonAdelante3:
+        JMP AuxPeonAdelante4
+
         ReiniciarValoresRDiagonalAbajoDerecha1:
             MOV AL, DL ; Restaurar el valor original de AL
             MOV BL, DH ; Restaurar el valor original de BL
@@ -489,16 +537,18 @@ MovimientoPiezas MACRO
             ADD AL, 7
             SUB BL, 1
             CMP BL, 0
-            JL SalidaMOV
+            JL AuxSalidaMOV7
             MOV SI, AX
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverRDiagonalAbajoIzquierda1
-            JMP SalidaMOV
+            JMP AuxSalidaMOV7
 
             XMoverRDiagonalAbajoIzquierda1:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRDiagonalAbajoIzquierda1
-        
+    
+    AuxSalidaMOV7:
+        JMP AuxSalidaMOV6
 
     VerificarCasillaRey:
         MOV AL, DL ; Restaurar el valor original de AL
@@ -514,6 +564,18 @@ MovimientoPiezas MACRO
             XMoverRArriba:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRAbajo
+
+    VerificarCasillaCaballo3:
+        JMP VerificarCasillaCaballo4
+    
+    VerificarCasillaAlfil3: 
+        JMP VerificarCasillaAlfil4
+
+    AuxTorreAdelante2:
+        JMP AuxTorreAdelante3
+    
+    AuxPeonAdelante4:
+        JMP AuxPeonAdelante5
 
         MoverRAbajo:
             MOV AL, DL ; Restaurar el valor original de AL
@@ -543,7 +605,6 @@ MovimientoPiezas MACRO
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRIzquierda
 
-
         MoverRIzquierda:
             MOV AL, DL ; Restaurar el valor original de AL
             MOV BL, DH ; Restaurar el valor original de BL
@@ -560,6 +621,17 @@ MovimientoPiezas MACRO
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRDiagonalArribaDerecha
 
+    VerificarCasillaCaballo4:
+        JMP VerificarCasillaCaballo44
+
+    VerificarCasillaAlfil4:
+        JMP VerificarCasillaAlfil5
+
+    AuxTorreAdelante3:
+        JMP AuxTorreAdelante33
+    
+    AuxPeonAdelante5:
+        JMP AuxPeonAdelante6
 
         MoverRDiagonalArribaDerecha:
             MOV AL, DL ; Restaurar el valor original de AL
@@ -593,6 +665,18 @@ MovimientoPiezas MACRO
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverRDiagonalAbajoDerecha
 
+    VerificarCasillaAlfil5:
+        JMP VerificarCasillaAlfil
+
+    AuxTorreAdelante33:
+            JMP AuxTorreAdelante4
+    
+    AuxPeonAdelante6:
+        JMP AuxPeonAdelante7
+
+    VerificarCasillaCaballo44:
+        JMP VerificarCasillaCaballo5
+
         MoverRDiagonalAbajoDerecha:
             MOV AL, DL ; Restaurar el valor original de AL
             MOV BL, DH ; Restaurar el valor original de BL
@@ -615,21 +699,31 @@ MovimientoPiezas MACRO
             ADD AL, 7
             SUB BL, 1
             CMP BL, 0
-            JL SalidaMOV
+            JL AuxSalidaMOV6
             MOV SI, AX
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverRDiagonalAbajoIzquierda
-            JMP SalidaMOV
+            JMP AuxSalidaMOV6
 
             XMoverRDiagonalAbajoIzquierda:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-                JMP SalidaMOV
+                JMP AuxSalidaMOV6
+    
+    AuxSalidaMOV6:
+        JMP AuxSalidaMOV5
 
+    VerificarCasillaCaballo5:
+        JMP VerificarCasillaCaballo6
+    
+    AuxTorreAdelante4:
+            JMP AuxTorreAdelante5
+    
+    AuxPeonAdelante7:
+        JMP AuxPeonAdelante8
 
     VerificarCasillaAlfil:
         MOV AL, DL ; Restaurar el valor original de AL
         MOV BL, DH ; Restaurar el valor original de BL
-
 
         MoverAlfilDerechaArriba:
             SUB AL, 8
@@ -641,7 +735,6 @@ MovimientoPiezas MACRO
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverAlfilDerechaArriba
             JMP MoverAlfilDerechaAbajo
-
         
             XMoverAlfilDerechaArriba:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
@@ -671,6 +764,15 @@ MovimientoPiezas MACRO
             MOV BL, DH ; Restaurar el valor original de BL
             JMP MoverAlfilIzquierdaArriba1
 
+    VerificarCasillaCaballo6:
+        JMP VerificarCasillaCaballo
+
+    AuxTorreAdelante5:
+        JMP AuxTorreAdelante66
+    
+    AuxPeonAdelante8:
+        JMP AuxPeonAdelante9
+
             MoverAlfilIzquierdaArriba1:
                 SUB AL, 9
                 SUB BL, 1
@@ -694,16 +796,24 @@ MovimientoPiezas MACRO
                 ADD AL, 7
                 SUB BL, 1
                 CMP BL, 0
-                JL SalidaMOV
+                JL AuxSalidaMOV5
                 MOV SI, AX
                 CMP tablero[SI], 32 ; Verifica si la casilla está vacía
                 JE XMoverAlfilIzquierdaAbajo
-                JMP SalidaMOV
+                JMP AuxSalidaMOV5
+
+    AuxTorreAdelante66:
+        JMP AuxTorreAdelante77
+    
+    AuxPeonAdelante9:
+        JMP AuxPeonAdelante10
 
             XMoverAlfilIzquierdaAbajo:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
                 JMP MoverAlfilIzquierdaAbajo1
 
+    AuxSalidaMOV5:
+            JMP AuxSalidaMOV4
 
     VerificarCasillaCaballo:
         MOV AL, DL ; Restaurar el valor original de AL
@@ -725,6 +835,12 @@ MovimientoPiezas MACRO
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverCaballoAdelanteDerecha
             JMP Izqui2
+    
+    AuxTorreAdelante77:
+        JMP AuxTorreAdelante7
+    
+    AuxPeonAdelante10:
+        JMP AuxPeonAdelante11
 
         MoverCaballoAdelanteIzquierda:
             MOV AL, DL ; Restaurar el valor original de AL
@@ -748,7 +864,6 @@ MovimientoPiezas MACRO
         MoverCaballoAtrasDerecha:
             MOV AL, DL ; Restaurar el valor original de AL
             ADD AL, 16
-
             CMP BL, 7
             JB MoverCaballoAtrasDerechaX
             JMP AtrasIzquierda 
@@ -764,6 +879,12 @@ MovimientoPiezas MACRO
                 CMP tablero[SI], 32 ; Verifica si la casilla está vacía
                 JE XMoverCaballoAtrasDerecha
                 JMP AtrasIzquierda
+
+    AuxTorreAdelante7:
+        JMP AuxTorreAdelante8
+    
+    AuxPeonAdelante11:
+        JMP AuxPeonAdelante12
 
             XMoverCaballoAtrasDerecha:
                 MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
@@ -815,13 +936,19 @@ MovimientoPiezas MACRO
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP MoverCaballoIzq
 
+    AuxTorreAdelante8:
+        JMP AuxTorreAdelante9
+    
+    AuxPeonAdelante12:
+        JMP VerificarCasillaPeonAdelante
+
     MoverCaballoIzq:
         MOV AL, DL
         SUB AL, 2
 
         CMP BL, 1
         JA MoverCaballoIzqArriba
-        JMP SalidaMOV
+        JMP AuxSalidaMOV4
         
         MoverCaballoIzqArriba:
             SUB AL, 8
@@ -841,13 +968,18 @@ MovimientoPiezas MACRO
             MOV SI, AX
             CMP tablero[SI], 32 ; Verifica si la casilla está vacía
             JE XMoverCaballoIzqAbajo
-            JMP SalidaMOV
+            JMP AuxSalidaMOV4
 
         XMoverCaballoIzqAbajo:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-            JMP SalidaMOV
+            JMP AuxSalidaMOV4
 
+    AuxSalidaMOV4:
+        JMP AuxSalidaMOV3
 
+    AuxTorreAdelante9:
+            JMP VerificarCasillaTorreAdelante
+    
     VerificarCasillaPeonAdelante:
         SUB AL, 16; Restar 16 a AL
         MOV SI, AX
@@ -860,7 +992,7 @@ MovimientoPiezas MACRO
         CMP tablero[SI], 32 ; Verifica si la casilla está vacía
         JE MoverPeonBlanco
 
-        JMP SalidaMOV
+        JMP AuxSalidaMOV3
     
         MoverPeonBlanco:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
@@ -868,8 +1000,11 @@ MovimientoPiezas MACRO
             SUB AL, 8; Restar 8 a AL
             MOV SI, AX
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
-            JMP SalidaMOV
+            JMP AuxSalidaMOV3
     
+    AuxSalidaMOV3:
+        JMP AuxSalidaMOV2
+
     VerificarCasillaTorreAdelante:
         MOV AL, DL ; Restaurar el valor original de AL
         SUB AL, 8; Restar 8 a AL
@@ -879,7 +1014,6 @@ MovimientoPiezas MACRO
         JE MoverTorreBlancaAdelante
         JMP VerificarCasillaTorreAtras
 
-        
         MoverTorreBlancaAdelante:
             MOV AL, DL ; Restaurar el valor original de AL
             SUB AL, CL; Restar CL a AL
@@ -893,6 +1027,9 @@ MovimientoPiezas MACRO
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP MoverTorreBlancaAdelante
     
+    AuxSalidaMOV2:
+        JMP AuxSalidaMOV1
+
     VerificarCasillaTorreAtras:
         MOV AL, DL ; Restaurar el valor original de AL
         ADD AL, 8; Sumar 8 a AL
@@ -901,7 +1038,6 @@ MovimientoPiezas MACRO
         CMP tablero[SI], 32 ; Verifica si la casilla está vacía
         JE MoverTorreBlancaAtras
         JMP VerificarCasillaTorreDerecha
-
         
         MoverTorreBlancaAtras:
             MOV AL, DL ; Restaurar el valor original de AL
@@ -915,7 +1051,10 @@ MovimientoPiezas MACRO
         XTorreBlancaAtras:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP MoverTorreBlancaAtras
-        
+
+    AuxSalidaMOV1:
+        JMP AuxSalidaMOV    
+    
     VerificarCasillaTorreDerecha:
         MOV AL, DL ; Restaurar el valor original de AL
         MOV BL, DH ; Restaurar el valor original de BL
@@ -938,11 +1077,13 @@ MovimientoPiezas MACRO
             JE XTorreBlancaDerecha
             JMP VerificarCasillaTorreIzquierda
             
-
         XTorreBlancaDerecha:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP movimientoColumnaDerecha
     
+    AuxSalidaMOV:
+        JMP SalidaMOV
+
     VerificarCasillaTorreIzquierda:
         MOV AL, DL ; Restaurar el valor original de AL
         MOV BL, DH ; Restaurar el valor original de BL
@@ -950,7 +1091,7 @@ MovimientoPiezas MACRO
         ;VERIFICAR si la columna no se ha pasado de la columna A
         CMP BL, 0
         JA MoverTorreBlancaIzquierda
-        JMP SalidaMOV
+        JMP AuxSalidaMOV
 
         movimientoColumnaIzquierda:
             CMP BL, 0
@@ -965,7 +1106,6 @@ MovimientoPiezas MACRO
             JE XTorreBlancaIzquierda
             JMP SalidaMOV
             
-
         XTorreBlancaIzquierda:
             MOV tablero[SI], 120 ; Coloca una "x" en la casilla, para informar que se puede mover
             JMP movimientoColumnaIzquierda
@@ -977,147 +1117,136 @@ ENDM
 MoverPieza MACRO 
     MOV AL, filaMov
     MOV BL, columnaMov
-    
     SUB AL, 49
     SUB BL, 97
-    
     MOV BH, 8
-    
     MUL BH
     ADD AL, BL
     MOV DL, AL ; Guardar el valor original de AL
-    
     ; Después de la operación row-major
     MOV SI, AX; a donde estoy moviendo la pieza
-
     ; Verificar qué pieza está en esa posición (P en ASCII)
     CMP CH, 80
-    JE moverPeon
-
+    JE moverPeon1
     CMP CH, 84 ; Si es un torre (T en ASCII)
-    JE moverTorre
-
+    JE moverTorre1
     CMP CH, 67 ; Si es un caballo (C en ASCII)
-    JE moverCaballo
-
+    JE moverCaballo1
     CMP CH, 65 ; Si es un alfil (A en ASCII)
     JE moverAlfil
-
     CMP CH, 82 ; Si es un rey  (R en ASCII)
     JE moverRey
-
     CMP CH, 42 ; Si es una reina (* en ASCII)
     JE moverReina
 
-    JMP SalidaMoverPieza
+    JMP AuxSalida3
+
+    moverTorre1:
+        JMP moverTorre
+
+    moverPeon1:
+        JMP moverPeon2
+    
+    moverCaballo1:
+        JMP moverCaballo2
 
     moverReina:
         MOV tablero[SI], 42
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-
         SUB AL, 49
         SUB BL, 97
-
         MOV BH, 8
-
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
-
-        JMP SalidaMoverPieza
+        JMP AuxSalida3
+    
+    AuxSalida3:
+        JMP AuxSalida2
 
     moverRey:
         MOV tablero[SI], 82
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-
         SUB AL, 49
         SUB BL, 97
-
         MOV BH, 8
-
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
+        JMP AuxSalida2
 
-        JMP SalidaMoverPieza
+    moverTorre2:
+        JMP moverTorre
+    
+    moverPeon2:
+        JMP moverPeon3
+    
+    moverCaballo2:
+        JMP moverCaballo
 
     moverAlfil:
         MOV tablero[SI], 65
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-
         SUB AL, 49
         SUB BL, 97
-
         MOV BH, 8
-
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
+        JMP AuxSalida2
 
-        JMP SalidaMoverPieza
+    AuxSalida2:
+        JMP AuxSalida
 
     moverCaballo:
         MOV tablero[SI], 67
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-
         SUB AL, 49
         SUB BL, 97
-
         MOV BH, 8
-
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
+        JMP AuxSalida
 
+    AuxSalida:
         JMP SalidaMoverPieza
+
+    moverPeon3:
+        JMP moverPeon
 
     moverTorre:
         MOV tablero[SI], 84
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-        
         SUB AL, 49
         SUB BL, 97
-        
         MOV BH, 8
-        
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
-
         JMP SalidaMoverPieza
-
 
     moverPeon:
         MOV tablero[SI], 80
-
         MOV AL, filaPosible
         MOV BL, columnaPosible
-        
         SUB AL, 49
         SUB BL, 97
-        
         MOV BH, 8
-        
         MUL BH
         ADD AL, BL
         MOV SI, AX
         MOV tablero[SI], 32
-
         JMP SalidaMoverPieza
 
     SalidaMoverPieza:
