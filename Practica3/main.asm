@@ -161,6 +161,21 @@ RellenarTablero MACRO
 
 ENDM
 
+TableroOriginal MACRO 
+    MOV SI, 16
+
+    TableroOriginal1:
+    MOV tablero[SI], 32; espacio en blanco
+    CMP SI, 48
+    JB TableroOriginal2
+    JMP SalirTableroOriginal
+    TableroOriginal2:
+        INC SI
+        JMP TableroOriginal1
+    SalirTableroOriginal:
+    
+ENDM
+
 CapturarNombre MACRO regNombre
     MOV AH, 3fh
     MOV BX, 00H
@@ -1336,6 +1351,9 @@ ENDM
                         
             JMP Menu
 
+        SaltoPrincipal:
+            JMP Principal
+
         SalidaRapida2:
             JMP Salida
         
@@ -1352,25 +1370,31 @@ ENDM
             MostrarTexto nombreJugador
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
+            TableroOriginal
             RellenarTablero
             DibujarTablero
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
-            JMP Jugar
-        
-        Jugar:
+            JMP PedirOpcionFila
+
+        SaltoPrincipal1:
+            JMP SaltoPrincipal
+
+        PedirOpcionFila:
             MostrarTexto textoMovimientos
             MostrarTexto saltoLinea
+            MostrarTexto textoRegresarMenu
             MostrarTexto saltoLinea
-            JMP PedirOpcionFila
-        
-        PedirOpcionFila:
+            MostrarTexto saltoLinea
             MostrarTexto textoIngreseFila
             CapturarOpcion filaPosible
 
             ;Verificar que la fila ingresada sea valida
             CMP filaPosible, 49
             JB ErrorFila
+
+            CMP filaPosible, 109
+            JE SaltoPrincipal1
 
             CMP filaPosible, 56
             JA ErrorFila
@@ -1381,6 +1405,8 @@ ENDM
                 CapturarOpcion seleccion
                 JMP PedirOpcionFila
             
+        SaltoPrincipal2:
+            JMP SaltoPrincipal1
         
         PedirOpcionColumna:
             MostrarTexto saltoLinea
@@ -1389,6 +1415,9 @@ ENDM
 
             CMP columnaPosible, 97
             JB ErrorColumna
+
+            CMP columnaPosible, 109
+            JE SaltoPrincipal2
 
             CMP columnaPosible, 104
             JA ErrorColumna
@@ -1401,6 +1430,10 @@ ENDM
 
 
         MostrarMovimientosPosibles:
+            BorrarPantalla
+            MostrarTexto nombreJugador
+            MostrarTexto textoInicioJuego
+            MostrarTexto nombreJugador
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             ; aqui poner de nuevo el tablero con los movimientos posibles de dicha pieza
@@ -1417,6 +1450,9 @@ ENDM
             MostrarTexto saltoLinea
             JMP PedirOpcionFilaMOV
         
+        SaltoPrincipal3:
+            JMP SaltoPrincipal2
+
         PedirOpcionFilaMOV:
             MostrarTexto textoIngreseFila
             CapturarOpcion filaMov ; elegir uno de los movimientos posibles
@@ -1425,6 +1461,9 @@ ENDM
             ;Verificar que la fila ingresada sea valida
             CMP filaMov, 49
             JB ErrorFilaMOV
+
+            CMP filaMov, 109
+            JE SaltoPrincipal3
 
             CMP filaMov, 56
             JA ErrorFilaMOV
@@ -1435,6 +1474,9 @@ ENDM
                 CapturarOpcion seleccion
                 JMP PedirOpcionFilaMOV
 
+        SaltoPrincipal4:
+            JMP SaltoPrincipal3
+
         PedirOpcionColumnaMOV:
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaMov
@@ -1443,6 +1485,9 @@ ENDM
 
             CMP columnaMov, 97
             JB ErrorColumnaMOV
+
+            CMP columnaMov, 109
+            JE SaltoPrincipal4
 
             CMP columnaMov, 104
             JA ErrorColumnaMOV
@@ -1454,6 +1499,12 @@ ENDM
                 JMP PedirOpcionColumnaMOV
         
         MoverPiezaTablero:
+            BorrarPantalla
+            MostrarTexto nombreJugador
+            MostrarTexto textoInicioJuego
+            MostrarTexto nombreJugador
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             ; aqui poner de nuevo el tablero con el movimiento de la pieza
             LimpiarTablero
             MostrarTexto saltoLinea
@@ -1465,12 +1516,10 @@ ENDM
             MostrarTexto saltoLinea
 
             ;CapturarOpcion seleccion
-            JMP Jugar
+            JMP PedirOpcionFila
 
-        
         SalidaRapida: ; Salida rápida (salto corto)
             JMP Salida
-
 
         MostrarReportes:
             NuevoArchivo nombreArchivo, handleArchivo
@@ -1505,7 +1554,6 @@ ENDM
             CerrarArchi handleArchivo
             CMP seleccion, 13
             JE Salida
-
 
         Salida: 
             MostrarTexto buffer
