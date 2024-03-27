@@ -1293,7 +1293,7 @@ ENDM
     tablero db 64 dup(32) ; row-major o column-major
     textoNombreJugador db "Ingrese nickname (5 letras): ", "$"
     nombreJugador db 5 dup(' '),'$'; 5 caracteres para el nombre
-    textoInicioJuego db "   vs  IA      Turno: ", 10, 13, "$"
+    textoInicioJuego db "   vs  IA      Turno: ", "$"
     handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
     nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
     textoErrorArchivo db "Error con el archivo", '$'
@@ -1304,6 +1304,9 @@ ENDM
     textoIngreseColumna db "Ingrese la columna (letra minuscula): ", "$"
     textoMovimientos db "Seleccione una pieza para visualizar los posibles movimientos", "$"
     textoMovimiento db "Elija el movimiento a realizar", "$"
+    textoRegresarMenu db "Ingrese m si desea regresar al menu", "$"
+    textoErrorFila db 10,13,"ERROR, fila ingresada no valida (presione enter)", "$"
+    textoErrorColumna db 10,13, "ERROR, columna ingresada no valida (presione enter)", "$"
 
 .CODE
 
@@ -1346,6 +1349,7 @@ ENDM
             BorrarPantalla
             MostrarTexto nombreJugador
             MostrarTexto textoInicioJuego
+            MostrarTexto nombreJugador
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             RellenarTablero
@@ -1358,33 +1362,98 @@ ENDM
             MostrarTexto textoMovimientos
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
+            JMP PedirOpcionFila
+        
+        PedirOpcionFila:
             MostrarTexto textoIngreseFila
             CapturarOpcion filaPosible
+
+            ;Verificar que la fila ingresada sea valida
+            CMP filaPosible, 49
+            JB ErrorFila
+
+            CMP filaPosible, 56
+            JA ErrorFila
+            JMP PedirOpcionColumna
+
+            ErrorFila:
+                MostrarTexto textoErrorFila
+                CapturarOpcion seleccion
+                JMP PedirOpcionFila
+            
+        
+        PedirOpcionColumna:
             MostrarTexto saltoLinea
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaPosible
-            MostrarTexto saltoLinea
-            MostrarTexto saltoLinea
 
+            CMP columnaPosible, 97
+            JB ErrorColumna
+
+            CMP columnaPosible, 104
+            JA ErrorColumna
+            JMP MostrarMovimientosPosibles
+
+            ErrorColumna:
+                MostrarTexto textoErrorColumna
+                CapturarOpcion seleccion
+                JMP PedirOpcionColumna
+
+
+        MostrarMovimientosPosibles:
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
             ; aqui poner de nuevo el tablero con los movimientos posibles de dicha pieza
             MovimientoPiezas
             DibujarTablero
+            JMP MostrarMoviemientos
 
-
+        MostrarMoviemientos:
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             MostrarTexto textoMovimiento
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
+            JMP PedirOpcionFilaMOV
+        
+        PedirOpcionFilaMOV:
             MostrarTexto textoIngreseFila
             CapturarOpcion filaMov ; elegir uno de los movimientos posibles
             MostrarTexto saltoLinea
+
+            ;Verificar que la fila ingresada sea valida
+            CMP filaMov, 49
+            JB ErrorFilaMOV
+
+            CMP filaMov, 56
+            JA ErrorFilaMOV
+            JMP PedirOpcionColumnaMOV
+
+            ErrorFilaMOV:
+                MostrarTexto textoErrorFila
+                CapturarOpcion seleccion
+                JMP PedirOpcionFilaMOV
+
+        PedirOpcionColumnaMOV:
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaMov
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
 
+            CMP columnaMov, 97
+            JB ErrorColumnaMOV
+
+            CMP columnaMov, 104
+            JA ErrorColumnaMOV
+            JMP MoverPiezaTablero
+
+            ErrorColumnaMOV:
+                MostrarTexto textoErrorColumna
+                CapturarOpcion seleccion
+                JMP PedirOpcionColumnaMOV
+        
+        MoverPiezaTablero:
             ; aqui poner de nuevo el tablero con el movimiento de la pieza
             LimpiarTablero
             MostrarTexto saltoLinea
@@ -1394,7 +1463,6 @@ ENDM
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
             MostrarTexto saltoLinea
-
 
             ;CapturarOpcion seleccion
             JMP Jugar
