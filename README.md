@@ -54,7 +54,7 @@
     Dentro de esta sección el usuario podrá visualizar al ultimo jugador dentro de la partida.
 
     <p align = "center">
-        <img src = "Practica3/imgs/Puntajes.png" width="500px">
+        <img src = "Practica3/imgs/puntajes.png" width="500px">
     </p>
 
 - **Reportes**
@@ -83,6 +83,8 @@
         1. MASM/TASM 
         2. MASM
         3. VSCode DOSBox
+
+    Así mismo, se hizo utilización de tres archivos ejecutables para la compilación del main.asm en DOSBox, estos archivos se encuentran dentro de la carpeta ".exe necesitados". 
 
 - **Macros**
 
