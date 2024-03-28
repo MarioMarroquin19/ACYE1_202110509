@@ -260,7 +260,7 @@ LeerArchi MACRO buffer, handleArchivo
 
     MOV AH, 3Fh ; leer archivo
     MOV BX, handleArchivo ; manejador del archivo
-    MOV CX, 300 ; cantidad de bytes a leer
+    MOV CX, 150 ; cantidad de bytes a leer
     LEA DX, buffer ; dirección del buffer
     INT 21h ; llamada a la interrupción
 
@@ -284,7 +284,7 @@ EscribirArchi MACRO archivo, handleArchivo
 
     MOV AH, 40h ; escribir en archivo
     MOV BX, handleArchivo ; manejador del archivo
-    MOV CX, 56 ; cantidad de bytes a escribir, debe irse modificando dependiendo de cuanto vamos a escribir, si no salen simbolos raros
+    MOV CX, 150 ; cantidad de bytes a escribir, debe irse modificando dependiendo de cuanto vamos a escribir, si no salen simbolos raros
     LEA DX, archivo ; dirección del archivo
     INT 21h ; llamada a la interrupción
 
@@ -1311,10 +1311,14 @@ ENDM
     textoInicioJuego db "   vs  IA      Turno: ", "$"
     handleArchivo DW ? ; Define handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
     nombreArchivo db "puntajes.txt", 00h ; nombre del archivo, terminar con 00h
+    ArchivoReporte db "reportes.htm", 00h ; nombre del archivo, terminar con 00h
+    textoReporte db "<!DOCTYPE html>", 10, 13, "<html>", 10, 13, "<head>", 10, 13, "<title>REPORTE</title>", 10, 13, "</head>", 10, 13, "<body>", 10, 13, "<h1>REPORTE</h1>", 10, 13,"<p><b>Nombre del curso:</b>", "$"
+    textoReporte1 db "Arquitectura de computadores y ensambladores 1</p>", 10, 13,"<p><b>Sección: </b>A</p>",10, 13,"<p><b>Nombre del estudiante:</b>Mario Ernesto Marroquin Perez</p>", 10, 13, "$"
+    textoReporte2 db "<p><b>Carnet:</b>202110509</p>", 10, 13,"<h2>Puntaje de Jugadores</h2>", 10,13,"<table border='1'>", 10, 13, "<tr>", 10, 13, "<th>Nombre</th>", "$"
+    textoReporte3 db  10, 13,"<th>Tiempo</th>", 10, 13, "</tr>", 10, 13,"</table>", 10, 13,"</body>", 10, 13, "</html>", "$"
     textoErrorArchivo db "Error con el archivo", '$'
     textoCreacion db 10, 13, "El Archivo Se Creo Correctamente", "$"
-    contenidoPrueba db "Este es un texto de prueba para escribir en los archivos"
-    buffer db 300 dup("$") ; Buffer para almacenar el contenido leido de un archivo
+    buffer db 150 dup("$") ; Buffer para almacenar el contenido leido de un archivo
     textoIngreseFila db "Ingrese la fila: ", "$"
     textoIngreseColumna db "Ingrese la columna (letra minuscula): ", "$"
     textoMovimientos db "Seleccione una pieza para visualizar los posibles movimientos", "$"
@@ -1322,6 +1326,7 @@ ENDM
     textoRegresarMenu db "Ingrese m si desea regresar al menu", "$"
     textoErrorFila db 10,13,"ERROR, fila ingresada no valida (presione enter)", "$"
     textoErrorColumna db 10,13, "ERROR, columna ingresada no valida (presione enter)", "$"
+    tituloNombre db "Nombre del jugador - Tiempo ", "$"
 
 .CODE
 
@@ -1340,8 +1345,8 @@ ENDM
             CMP seleccion, 49 ; 49 es el valor ASCII de 1, estamos estimulando el registro de banderas
             JE MostrarTablero
             
-            ;CMP seleccion, 50 ; 50 es el valor ASCII de 2, estamos estimulando el registro de banderas
-            ;JE MostrarPuntajes
+            CMP seleccion, 50 ; 50 es el valor ASCII de 2, estamos estimulando el registro de banderas
+            JE MostrarPuntajes
 
             CMP seleccion, 51 ; 51 es el valor ASCII de 3, estamos estimulando el registro de banderas
             JE MostrarReportes1
@@ -1360,10 +1365,20 @@ ENDM
         MostrarReportes1:
             JMP MostrarReportes
 
+        MostrarPuntajes:
+            MostrarTexto saltoLinea
+            MostrarTexto saltoLinea
+            MostrarTexto tituloNombre
+            MostrarTexto saltoLinea
+            MostrarTexto nombreJugador
+            MostrarTexto saltoLinea
+            CapturarOpcion seleccion
+            JMP Principal
+
         MostrarTablero:
             BorrarPantalla
             MostrarTexto textoNombreJugador
-            CapturarNombre nombreJugador ; captura el nombre con un máximo de 20 caracteres
+            CapturarNombre nombreJugador ; captura el nombre con un máximo de 5 caracteres
             BorrarPantalla
             MostrarTexto nombreJugador
             MostrarTexto textoInicioJuego
@@ -1522,12 +1537,14 @@ ENDM
             JMP Salida
 
         MostrarReportes:
-            NuevoArchivo nombreArchivo, handleArchivo
+            NuevoArchivo ArchivoReporte, handleArchivo
             CMP seleccion, 13 ;verificamos que no exista error
             JE SalidaRapida
-
             ;PosicionFinalApuntador handleArchivo
-            EscribirArchi contenidoPrueba, handleArchivo
+            EscribirArchi textoReporte, handleArchivo
+            EscribirArchi textoReporte1, handleArchivo
+            EscribirArchi textoReporte2, handleArchivo
+            EscribirArchi textoReporte3, handleArchivo
             CMP seleccion, 13
             JE SalidaRapida3
 
@@ -1542,18 +1559,8 @@ ENDM
         SeguirArchivos: 
             MostrarTexto textoCreacion
             CapturarOpcion seleccion
+            JMP SaltoPrincipal4
 
-            AbrirArchi nombreArchivo, handleArchivo
-            CMP seleccion, 13
-            JE SalidaRapida3
-
-            LeerArchi buffer, handleArchivo
-            CMP seleccion, 13
-            JE Salida
-
-            CerrarArchi handleArchivo
-            CMP seleccion, 13
-            JE Salida
 
         Salida: 
             MostrarTexto buffer
