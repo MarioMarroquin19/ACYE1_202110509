@@ -15,7 +15,7 @@ CapturarOpcion MACRO regSeleccion
     MOV regSeleccion, AL
 ENDM
 
-MostrarTextoColor MACRO registroTexto, color, caracteres
+MostrarTextoColor MACRO registroTexto, color, caractere
     mov ah, 9
     mov bl, color; el color
     mov cx, caracteres ; numero de caracteres

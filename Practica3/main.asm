@@ -1327,6 +1327,8 @@ ENDM
     textoErrorFila db 10,13,"ERROR, fila ingresada no valida (presione enter)", "$"
     textoErrorColumna db 10,13, "ERROR, columna ingresada no valida (presione enter)", "$"
     tituloNombre db "Nombre del jugador - Tiempo ", "$"
+    textoGanadorUsuario db "Felicidades, ha ganado", "$"
+    textoGanadorIA db "Ha ganado la IA", "$"
 
 .CODE
 
@@ -1395,6 +1397,18 @@ ENDM
         SaltoPrincipal1:
             JMP SaltoPrincipal
 
+        GanadorUsuario:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorUsuario
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+        
+        GanadorIA:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorIA
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+
         PedirOpcionFila:
             MostrarTexto textoMovimientos
             MostrarTexto saltoLinea
@@ -1408,8 +1422,14 @@ ENDM
             CMP filaPosible, 49
             JB ErrorFila
 
-            CMP filaPosible, 109
+            CMP filaPosible, 109; 109 es el valor ASCII de m, verifica si el usuario desea regresar al menu
             JE SaltoPrincipal1
+
+            CMP filaPosible, 119; 119 es el valor ASCII de w, verifica que ganó el usuario
+            JE GanadorUsuario
+
+            CMP filaPosible, 121; 121 es el valor ASCII de y, verifica que ganó la IA
+            JE GanadorIA
 
             CMP filaPosible, 56
             JA ErrorFila
@@ -1423,6 +1443,18 @@ ENDM
         SaltoPrincipal2:
             JMP SaltoPrincipal1
         
+        GanadorUsuario1:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorUsuario
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+        
+        GanadorIA1:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorIA
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+
         PedirOpcionColumna:
             MostrarTexto saltoLinea
             MostrarTexto textoIngreseColumna
@@ -1433,6 +1465,12 @@ ENDM
 
             CMP columnaPosible, 109
             JE SaltoPrincipal2
+
+            CMP filaPosible, 119; 119 es el valor ASCII de w, verifica que ganó el usuario
+            JE GanadorUsuario1
+
+            CMP filaPosible, 121; 121 es el valor ASCII de y, verifica que ganó la IA
+            JE GanadorIA1
 
             CMP columnaPosible, 104
             JA ErrorColumna
@@ -1468,6 +1506,18 @@ ENDM
         SaltoPrincipal3:
             JMP SaltoPrincipal2
 
+        GanadorUsuario2:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorUsuario
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+        
+        GanadorIA2:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorIA
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+
         PedirOpcionFilaMOV:
             MostrarTexto textoIngreseFila
             CapturarOpcion filaMov ; elegir uno de los movimientos posibles
@@ -1479,6 +1529,12 @@ ENDM
 
             CMP filaMov, 109
             JE SaltoPrincipal3
+
+            CMP filaPosible, 119; 119 es el valor ASCII de w, verifica que ganó el usuario
+            JE GanadorUsuario2
+
+            CMP filaPosible, 121; 121 es el valor ASCII de y, verifica que ganó la IA
+            JE GanadorIA2
 
             CMP filaMov, 56
             JA ErrorFilaMOV
@@ -1492,6 +1548,18 @@ ENDM
         SaltoPrincipal4:
             JMP SaltoPrincipal3
 
+        GanadorUsuario3:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorUsuario
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+        
+        GanadorIA3:
+            MostrarTexto saltoLinea
+            MostrarTexto textoGanadorIA
+            CapturarOpcion seleccion
+            JMP SaltoPrincipal1
+
         PedirOpcionColumnaMOV:
             MostrarTexto textoIngreseColumna
             CapturarOpcion columnaMov
@@ -1503,6 +1571,12 @@ ENDM
 
             CMP columnaMov, 109
             JE SaltoPrincipal4
+
+            CMP filaPosible, 119; 119 es el valor ASCII de w, verifica que ganó el usuario
+            JE GanadorUsuario3
+
+            CMP filaPosible, 121; 121 es el valor ASCII de y, verifica que ganó la IA
+            JE GanadorIA3
 
             CMP columnaMov, 104
             JA ErrorColumnaMOV
@@ -1563,7 +1637,7 @@ ENDM
 
 
         Salida: 
-            MostrarTexto buffer
+            ;MostrarTexto buffer
             MOV AX, 4C00h ;terminar el programa(interrupción)
             INT 21h
 
