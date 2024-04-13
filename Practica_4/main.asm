@@ -118,65 +118,30 @@ DibujarTableroTotito MACRO
         MOV AH, 86h
         MOV CX, 20
         INT 15h
-        MOV CX, 0
-        MOV DX, 0
+
         MOV AL, 03h
         MOV AH, 00h
         INT 10h
 
+        MOV AX, 03h
+        INT 10h
+
 ENDM
+
+DibujarXenTablero MACRO
+    
+ENDM
+
+DibujarOenTablero MACRO 
+    
+ENDM
+
 
 Delay MACRO tiempo
     MOV AH, 86h
     MOV CX, tiempo
     INT 15h
 ENDM
-
-CapturarFilaColumna MACRO buffer, tamBuffer
-    ; Asumimos que 'buffer' es donde se almacenará la cadena introducida
-    ; y 'tamBuffer' es el tamaño del búfer de entrada.
-
-    ; Inicializar variables
-    MOV DI, 0                 ; Índice para el búfer
-
-    LeerEntrada:
-        MOV AH, 00h          ; Función de lectura de teclado
-        INT 16h              ; Llamar a la interrupción del teclado
-        CMP AL, 13           ; Verificar si se presionó Enter (retorno de carro)
-        JE FinCaptura         ; Si es Enter, terminar la captura
-        CMP AL, 8            ; Verificar si se presionó Backspace
-        JE BorrarCaracter    ; Si es Backspace, borrar el último carácter
-
-        ; Comprobar si el búfer está lleno
-        CMP DI, tamBuffer
-        JE LeerEntrada       ; Si está lleno, ignorar la entrada
-
-        ; Almacenar el carácter leído en el búfer
-        MOV [buffer + DI], AL
-        INC DI               ; Incrementar el índice del búfer
-
-        ; Mostrar el carácter (opcional)
-        MOV AH, 0Eh          ; Función de video para mostrar carácter
-        INT 10h              ; Llamar a la interrupción de video
-
-        JMP LeerEntrada      ; Leer el siguiente carácter
-
-    BorrarCaracter:
-        ; Verificar si hay algo que borrar
-        CMP DI, 0
-        JE LeerEntrada      ; Si el índice es 0, no hay nada que borrar
-        DEC DI              ; Decrementar el índice del búfer
-        JMP LeerEntrada     ; Continuar con la lectura de entrada
-
-    FinCaptura:
-        ; Agregar el carácter nulo al final de la cadena
-        MOV BYTE PTR [buffer + DI], 0
-
-        ; En este punto, 'buffer' contiene la cadena de entrada.
-        ; Ahora podrías convertir los caracteres numéricos a valores reales
-        ; y separarlos en dos variables 'fila' y 'columna'.
-ENDM
-
 
 .MODEL small
 .STACK 64h
@@ -199,9 +164,6 @@ ENDM
     opcionTotito3 db "|3.| Reportes", "$"
     opcionTotito4 db "|4.| Regresar", "$"
     textoIngreseMov db "Ingrese su movimiento (fila;columna): ", "$"
-    MAX_TAM_BUFFER EQU 5         ; Asume 5 para "1:3" y el carácter de terminación
-    bufferEntrada  DB MAX_TAM_BUFFER DUP(?) ; Define el buffer con el tamaño máximo
-
 
 .CODE
 
@@ -288,11 +250,8 @@ ENDM
                 BorrarPantalla
                 CambiarModoVideo
                 DibujarTableroTotito
-                CambiarModoTexto
-                BorrarPantalla
-                CambiarModoTexto
-                ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Fh, 38, 0, 0
-                CapturarFilaColumna bufferEntrada, MAX_TAM_BUFFER 
+                ;CambiarModoTexto
+                ;ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Fh, 38, 0, 0
                 JMP Menu
             
             auxMenu:
