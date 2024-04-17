@@ -56,7 +56,7 @@ DibujarTableroTotito MACRO
     XOR DX, DX
 
     MOV AL, 09h
-    MOV CX, 105
+    MOV CX, 45
     MOV DX, 0
     MOV AH, 0Ch
     
@@ -65,18 +65,18 @@ DibujarTableroTotito MACRO
         
         INC DX
         
-        CMP DX, 200
+        CMP DX, 145
         JB Barra1
         
         INC CX
         
-        CMP CX, 110
+        CMP CX, 50
         JA ContinuarBarra2
         MOV DX, 0
         JMP Barra1
         
     ContinuarBarra2:
-        MOV CX, 210
+        MOV CX, 95
         MOV DX, 0
         
     Barra2:
@@ -84,31 +84,31 @@ DibujarTableroTotito MACRO
         
         INC DX
         
-        CMP DX, 200
+        CMP DX, 145
         JB Barra2
         
         INC CX
         
-        CMP CX, 215
+        CMP CX, 100
         JA ContinuarBarra3
         MOV DX, 0
         JMP Barra2
 
     ContinuarBarra3:
         MOV CX, 0
-        MOV DX, 60
+        MOV DX, 45
 
     Barra3:
         INT 10h
 
         INC CX
 
-        CMP CX, 320
+        CMP CX, 145
         JB Barra3
 
         INC DX
 
-        CMP DX, 65
+        CMP DX, 50
         JA ContinuarBarra4
         MOV CX, 0
         JMP Barra3
@@ -116,19 +116,19 @@ DibujarTableroTotito MACRO
 
     ContinuarBarra4:
         MOV CX, 0
-        MOV DX, 125
+        MOV DX, 95
 
     Barra4:
         INT 10h
 
         INC CX
 
-        CMP CX, 320
+        CMP CX, 145
         JB Barra4
 
         INC DX
 
-        CMP DX, 130
+        CMP DX, 100
         JA SalirTablero
         MOV CX, 0
         JMP Barra4
@@ -323,8 +323,8 @@ ENDM
 .STACK 100h
 
 .DATA
-    posicionesColumna db 35, 145, 250
-    posicionesFila db 15, 80, 150
+    posicionesColumna db 8, 57, 107
+    posicionesFila db 6, 57, 105
     ln db 10, 13, "$"
     textoInicio db "|M|E|N|U| |P|R|I|N|C|I|P|A|L|", "$"
     textoAdorno db "+-+-+-+-+ +-+-+-+-+-+-+-+-+-+", "$"
