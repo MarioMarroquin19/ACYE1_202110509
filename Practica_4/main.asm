@@ -9,12 +9,6 @@ MostrarTexto MACRO registroTexto
     INT 21h    
 ENDM
 
-CapturarOpcion MACRO regSeleccion
-    MOV AH, 01h
-    INT 21h
-    MOV regSeleccion, AL
-ENDM
-
 MostrarTextoColor MACRO registroTexto, color, caracteres
     mov ah, 9
     mov bl, color; el color
@@ -23,6 +17,12 @@ MostrarTextoColor MACRO registroTexto, color, caracteres
     mov DX,OFFSET registroTexto
     int 21H
 
+ENDM
+
+CapturarOpcion MACRO regSeleccion
+    MOV AH, 01h
+    INT 21h
+    MOV regSeleccion, AL
 ENDM
 
 CambiarModoVideo MACRO
@@ -50,92 +50,224 @@ ImprimirCadenaPersonalizada MACRO cadena, pagina, color, caracteres, columna, fi
 ENDM
 
 DibujarTableroTotito MACRO
-    MOV AL, 09h   
-    MOV CX, 45     ; columna
-    MOV DX, 0       ; fila
-    MOV AH, 0Ch   
+    LOCAL Barra1, Barra2, Barra3, Barra4, SalirTablero
+    XOR AX, AX
+    XOR CX, CX
+    XOR DX, DX
 
+    MOV AL, 09h
+    MOV CX, 105
+    MOV DX, 0
+    MOV AH, 0Ch
+    
     Barra1:
         INT 10h
+        
         INC DX
-        CMP DX, 145
+        
+        CMP DX, 200
         JB Barra1
+        
         INC CX
-        CMP CX, 50
+        
+        CMP CX, 110
         JA ContinuarBarra2
         MOV DX, 0
         JMP Barra1
-    
+        
     ContinuarBarra2:
-            MOV CX, 95
-            MOV AL, 09h
-            MOV DX, 0
-
+        MOV CX, 210
+        MOV DX, 0
+        
     Barra2:
         INT 10h
+        
         INC DX
-        CMP DX, 145
+        
+        CMP DX, 200
         JB Barra2
+        
         INC CX
-        CMP CX, 100
+        
+        CMP CX, 215
         JA ContinuarBarra3
         MOV DX, 0
         JMP Barra2
-    
+
     ContinuarBarra3:
         MOV CX, 0
-        MOV AL, 09h
-        MOV DX, 45
-    
+        MOV DX, 60
+
     Barra3:
         INT 10h
+
         INC CX
-        CMP CX, 145
+
+        CMP CX, 320
         JB Barra3
+
         INC DX
-        CMP DX, 50
+
+        CMP DX, 65
         JA ContinuarBarra4
         MOV CX, 0
         JMP Barra3
 
+
     ContinuarBarra4:
         MOV CX, 0
-        MOV AL, 09h
-        MOV DX, 95
+        MOV DX, 125
 
     Barra4:
         INT 10h
+
         INC CX
-        CMP CX, 145
+
+        CMP CX, 320
         JB Barra4
+
         INC DX
-        CMP DX, 100
-        JA TableroTerminado
+
+        CMP DX, 130
+        JA SalirTablero
         MOV CX, 0
         JMP Barra4
-    
-    TableroTerminado:
-        MOV AH, 86h
-        MOV CX, 20
-        INT 15h
 
-        MOV AL, 03h
-        MOV AH, 00h
-        INT 10h
-
-        MOV AX, 03h
-        INT 10h
-
+    SalirTablero:
 ENDM
 
 DibujarXenTablero MACRO
-    
+    LOCAL Ciclo1, Ciclo2
+    XOR AX, AX
+    XOR BX, BX
+    XOR CX, CX
+    XOR DX, DX
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
+
+    MOV BL, fila
+    MOV DL, posicionesFila[BX]
+
+    MOV AL, 6
+    MOV AH, 0Ch
+    MOV BL, 0
+
+    Ciclo1:
+        INT 10h
+
+        INC CX
+        INC DX
+        INC BL
+        CMP BL, 30
+        JNE Ciclo1
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
+    ADD CL, 30
+
+    MOV BL, fila
+    MOV DL, posicionesFila[BX]
+
+    MOV BL, 0
+
+    Ciclo2:
+        INT 10h
+
+        DEC CX
+        INC DX
+        INC BL
+        CMP BL, 30
+        JNE Ciclo2
 ENDM
 
 DibujarOenTablero MACRO 
+    LOCAL Part1, Part2, Part3, Part4
+    XOR AX, AX
+    XOR BX, BX
+    XOR CX, CX
+    XOR DX, DX
+
+    MOV AL, 10
+    MOV AH, 0Ch
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
     
+    MOV BL, fila
+    MOV DL, posicionesFila[BX]
+
+    MOV BL, 0
+
+    Part1:
+        INT 10h
+
+        INC CX
+        INC BL
+        CMP BL, 31
+        JNE Part1
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
+
+    MOV BL, 0
+
+    Part2:
+        INT 10h
+
+        INC DX
+        INC BL
+        CMP BL, 31
+        JNE Part2
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
+    ADD CL, 30
+    
+    MOV BL, fila
+    MOV DL, posicionesFila[BX]
+    ADD DL, 30
+
+    MOV BL, 0
+
+    Part3:
+        INT 10h
+
+        DEC CX
+        INC BL
+        CMP BL, 31
+        JNE Part3
+
+    MOV BL, columna
+    MOV CL, posicionesColumna[BX]
+    ADD CL, 30
+
+    MOV BL, 0
+
+    Part4:
+        INT 10h
+
+        DEC DX
+        INC BL
+        CMP BL, 31
+        JNE Part4
 ENDM
 
+InfoEstudiante MACRO
+    BorrarPantalla
+    MostrarTextoColor textoPracticaAdorno, 0Bh, 31
+    MostrarTexto ln
+    MostrarTextoColor textoPractica, 0Bh, 31
+    MostrarTexto ln
+    MostrarTextoColor textoPracticaAdorno, 0Bh, 31
+    MostrarTexto ln
+    MostrarTexto ln
+    MostrarTexto textoInfo
+    MostrarTexto textoInfo1
+    MostrarTexto ln
+    MostrarTexto ln
+    MostrarTexto textoRegresar
+ENDM
 
 Delay MACRO tiempo
     MOV AH, 86h
@@ -143,10 +275,56 @@ Delay MACRO tiempo
     INT 15h
 ENDM
 
+PedirMovs MACRO 
+    ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Fh, 38, 0, 0
+    CapturarOpcion fila
+    
+    SUB AL, 49
+    MOV fila, AL
+
+    ;posición del cursor
+    MOV AH, 03h   ; Función para leer la posición del cursor
+    MOV BH, 0     ; Número de página
+    INT 10h       ; Interrupción del BIOS para video
+
+    ; DL = posición del cursor en columna, DH = posición del cursor en fila
+
+    ; Imprimir el punto y coma en la posición actual del cursor
+    ImprimirCadenaPersonalizada puntoYcoma, 0, 0Fh, 1, DL, DH
+
+    ; Incrementar la posición de la columna para no sobrescribir el ;
+    INC DL
+
+    CapturarOpcion columna
+    SUB AL, 49
+    MOV columna, AL
+
+
+ENDM
+
+SalirMacro MACRO 
+    MOV AH, 4Ch
+    INT 21h
+ENDM
+
+JuegoVsJugadorMacro MACRO
+    BorrarPantalla
+    CambiarModoTexto
+    MostrarTexto jugadores
+    CapturarOpcion opcion
+    BorrarPantalla
+    CambiarModoVideo
+    DibujarTableroTotito
+    CambiarModoTexto
+    PedirMovs
+ENDM
+
 .MODEL small
-.STACK 64h
+.STACK 100h
 
 .DATA
+    posicionesColumna db 35, 145, 250
+    posicionesFila db 15, 80, 150
     ln db 10, 13, "$"
     textoInicio db "|M|E|N|U| |P|R|I|N|C|I|P|A|L|", "$"
     textoAdorno db "+-+-+-+-+ +-+-+-+-+-+-+-+-+-+", "$"
@@ -156,6 +334,8 @@ ENDM
     textoPractica db "****  P R A C T I C A   4  ****","$"
     textoPracticaAdorno db "*******************************", "$"
     opcion db 1 dup(32);
+    fila db 0
+    columna db 0
     textoRegresar db "Presione una tecla para regresar al menu: ", "$"
     textoOpcion db "**** INGRESE UNA OPCION ****", "$"
     textoIngresarOpcion db ">>Ingrese una opcion: ","$"
@@ -164,6 +344,9 @@ ENDM
     opcionTotito3 db "|3.| Reportes", "$"
     opcionTotito4 db "|4.| Regresar", "$"
     textoIngreseMov db "Ingrese su movimiento (fila;columna): ", "$"
+    puntoYcoma db ";", "$"
+    jugadores db "JUGADOR 1 ES X, JUGADOR 2 ES []", "$"
+    turno db 0
 
 .CODE
 
@@ -173,7 +356,6 @@ ENDM
 
     MOV AX, 03h ; Definimos el modo video AH = 0h | AL = 03h
     INT 10h
-
 
     Principal PROC
         BorrarPantalla
@@ -211,7 +393,7 @@ ENDM
                 JMP Informacion3
             
             Salir2:
-                JMP Salir3
+                SalirMacro
 
             NuevoJuego:
                 BorrarPantalla
@@ -247,18 +429,52 @@ ENDM
                 JMP ReportesJuego
 
             JuegoVsIA:
-                BorrarPantalla
-                CambiarModoVideo
-                DibujarTableroTotito
-                ;CambiarModoTexto
-                ;ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Fh, 38, 0, 0
                 JMP Menu
             
             auxMenu:
                 JMP Menu
 
             JuegoVsJugador:
-                JE auxMenu
+                BorrarPantalla
+                CambiarModoTexto
+                MostrarTexto jugadores
+                CapturarOpcion opcion
+                PedirMovs
+
+                MOV AL, 13h
+                MOV AH, 00h
+                INT 10h
+
+                DibujarTableroTotito
+
+                CMP turno, 0
+                JE PintarSpriteX
+
+                CMP turno, 1
+                JE PintarSpriteO
+
+                PintarSpriteX:
+                    DibujarXenTablero
+                    MOV AL, turno
+                    INC AL
+                    MOV turno, AL
+                    JMP ContinuarModoVideo
+
+                PintarSpriteO:
+                    DibujarOenTablero
+                    MOV AL, turno
+                    DEC AL
+                    MOV turno, AL
+
+                ContinuarModoVideo:
+                    MOV AH, 10h
+                    INT 16h
+
+                    MOV AL, 03h
+                    MOV AH, 00h
+                    INT 10h
+
+                JMP JuegoVsJugador
 
             ReportesJuego:
                 JE auxMenu
@@ -277,19 +493,7 @@ ENDM
                 JMP Menu
 
             Informacion:
-                BorrarPantalla
-                MostrarTextoColor textoPracticaAdorno, 0Bh, 31
-                MostrarTexto ln
-                MostrarTextoColor textoPractica, 0Bh, 31
-                MostrarTexto ln
-                MostrarTextoColor textoPracticaAdorno, 0Bh, 31
-                MostrarTexto ln
-                MostrarTexto ln
-                MostrarTexto textoInfo
-                MostrarTexto textoInfo1
-                MostrarTexto ln
-                MostrarTexto ln
-                MostrarTexto textoRegresar
+                InfoEstudiante
                 CapturarOpcion opcion
                 JMP Menu
 
