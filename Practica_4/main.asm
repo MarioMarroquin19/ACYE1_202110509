@@ -308,15 +308,38 @@ SalirMacro MACRO
 ENDM
 
 JuegoVsJugadorMacro MACRO
-    BorrarPantalla
-    CambiarModoTexto
-    MostrarTexto jugadores
-    CapturarOpcion opcion
-    BorrarPantalla
-    CambiarModoVideo
+    MOV AL, 13h
+    MOV AH, 00h
+    INT 10h
+
     DibujarTableroTotito
-    CambiarModoTexto
-    PedirMovs
+
+    CMP turno, 0
+    JE PintarSpriteX
+
+    CMP turno, 1
+    JE PintarSpriteO
+
+    PintarSpriteX:
+        DibujarXenTablero
+        MOV AL, turno
+        INC AL
+        MOV turno, AL
+        JMP ContinuarModoVideo
+
+    PintarSpriteO:
+        DibujarOenTablero
+        MOV AL, turno
+        DEC AL
+        MOV turno, AL
+
+    ContinuarModoVideo:
+        MOV AH, 10h
+        INT 16h
+
+        MOV AL, 03h
+        MOV AH, 00h
+        INT 10h
 ENDM
 
 .MODEL small
@@ -346,7 +369,9 @@ ENDM
     textoIngreseMov db "Ingrese su movimiento (fila;columna): ", "$"
     puntoYcoma db ";", "$"
     jugadores db "JUGADOR 1 ES X, JUGADOR 2 ES []", "$"
+    textoSalida db "Presione ESC para finalizar la partida", "$"
     turno db 0
+    gameBoard db 9 DUP(0) ; Inicia el tablero con 0
 
 .CODE
 
@@ -411,14 +436,11 @@ ENDM
 
                 CMP opcion, 50; (2) 1 vs 1
                     JE auxJuegoVsJugador
-                    ;Debo ir al modo video y dibujar el tablero de totito 
 
                 CMP opcion, 51; (3) Reportes
                     JE auxReportesJuego
-                    ;Debo ir al modo video y dibujar el tablero de totito 
 
                 CMP opcion, 52; (4) Regresar 
-                    ;regresar al modo texto y volver al menu principal
                     CambiarModoTexto
                     JMP Menu
 
@@ -437,43 +459,14 @@ ENDM
             JuegoVsJugador:
                 BorrarPantalla
                 CambiarModoTexto
-                MostrarTexto jugadores
+                ImprimirCadenaPersonalizada jugadores, 0, 0Eh, 31, 0, 0
+                ImprimirCadenaPersonalizada textoSalida, 0, 0Ah, 38, 0, 3
                 CapturarOpcion opcion
+                CMP opcion, 27
+                JE NuevoJuego
+                BorrarPantalla
                 PedirMovs
-
-                MOV AL, 13h
-                MOV AH, 00h
-                INT 10h
-
-                DibujarTableroTotito
-
-                CMP turno, 0
-                JE PintarSpriteX
-
-                CMP turno, 1
-                JE PintarSpriteO
-
-                PintarSpriteX:
-                    DibujarXenTablero
-                    MOV AL, turno
-                    INC AL
-                    MOV turno, AL
-                    JMP ContinuarModoVideo
-
-                PintarSpriteO:
-                    DibujarOenTablero
-                    MOV AL, turno
-                    DEC AL
-                    MOV turno, AL
-
-                ContinuarModoVideo:
-                    MOV AH, 10h
-                    INT 16h
-
-                    MOV AL, 03h
-                    MOV AH, 00h
-                    INT 10h
-
+                JuegoVsJugadorMacro
                 JMP JuegoVsJugador
 
             ReportesJuego:
