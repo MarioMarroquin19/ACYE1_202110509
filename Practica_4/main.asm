@@ -438,28 +438,88 @@ SalirMacro MACRO
 ENDM
 
 JuegoVsJugadorMacro MACRO
-    MOV AL, fila    ; Mueve el valor ASCII de 'fila' a AL
-    MOV BL, columna ; Mueve el valor ASCII de 'columna' a BL
+    MOV AL, fila
+    MOV AH, 0
+    MOV BL, columna
+    MOV BH, 0
 
-    ; Calcular el índice lineal para un tablero de 3x3
-    MOV AH, 0       ; Limpia AH para usar AX completo
-    MOV CL, 3       ; Establece 3 como el número de columnas en el tablero
-    MUL CL          ; Multiplica AL por 3 (número de columnas)
-    ADD AX, BX      ; Suma el resultado con BL (columna convertida)
-
-    MOV SI, AX      ; Mueve el resultado final a SI
+    PUSH SI
+    PUSH AX
+    PUSH BX
 
     MOV AL, 13h
     MOV AH, 00h
     INT 10h
 
+    MOV SI, 0
+
     DibujarTableroTotito
+    JMP ContadorBX
 
-    CMP turno, 0
-    JE PintarSpriteX
+    ContadorBX:
+        CMP SI, 9
+        JB PintarTableroTotito
+        JMP Continuar
+    
+    ContadorBX1:
+        INC SI
+        JMP ContadorBX
 
-    CMP turno, 1
-    JE PintarSpriteO
+    ;comprobar tablero[SI] para dibujar X o O en DibujarTableroTotito
+    PintarTableroTotito:
+        MOV CL, tablero[SI]       
+
+        CMP CL, 32
+        JE ContadorBX1
+
+        CMP CL, 88
+        JE PintarX
+
+        CMP CL, 79
+        JE PintarO
+
+        PintarX:
+            MOV AX, SI
+            MOV BX, 3
+            XOR DX, DX
+
+            DIV BX
+
+            MOV fila, AL
+            MOV columna, DL
+            DibujarXenTablero
+            INC SI
+            JMP ContadorBX
+        
+        PintarO:
+            MOV AX, SI
+            MOV BX, 3
+            XOR DX, DX
+
+            DIV BX
+
+            MOV fila, AL
+            MOV columna, DL
+            
+            DibujarOenTablero
+            INC SI
+            JMP ContadorBX
+
+    ;DibujarTableroTotito
+
+    Continuar:
+        POP BX
+        POP AX
+        POP SI
+
+        MOV fila, AL
+        MOV columna, BL
+
+        CMP turno, 0
+        JE PintarSpriteX
+
+        CMP turno, 1
+        JE PintarSpriteO
 
     PintarSpriteX:
         MOV tablero[SI], 88
@@ -499,18 +559,6 @@ IniciarTablero MACRO
 ENDM
 
 ComprobarGanador MACRO
-    ; MOV AL, fila    ; Mueve el valor ASCII de 'fila' a AL
-    ; MOV BL, columna ; Mueve el valor ASCII de 'columna' a BL
-
-    ; ; Calcular el índice lineal para un tablero de 3x3
-    ; MOV AH, 0       ; Limpia AH para usar AX completo
-    ; MOV CL, 3       ; Establece 3 como el número de columnas en el tablero
-    ; MUL CL          ; Multiplica AL por 3 (número de columnas)
-    ; ADD AX, BX      ; Suma el resultado con BL (columna convertida)
-
-    ; MOV SI, AX      ; Mueve el resultado final a SI
-
-    ;-----------------------------------
     MOV SI, 0
     MOV CL, 0 ; CONTADOR DE COLUMNAS
     MOV CH, 0 ; CONTADOR DE FILAS
@@ -819,6 +867,8 @@ ENDM
 .STACK 100h
 
 .DATA
+    equis db "Hay una equis", "$"
+    circulo db "Hay un circulo", "$"
     GanadorX db "GANO JUGADOR 1 (X)", "$"
     GanadorO db "GANO JUGADOR 2 ([])", "$"
     bufferSI DB 5 DUP(0)  ; Buffer para 5 dígitos
@@ -853,6 +903,8 @@ ENDM
     turno db 0
     tablero db 9 dup(32) 
     textoCasillaOcupada db "La casilla esta ocupada", "$"
+    textoNombreJugador1 db "Ingrese nickname1 (5 letras): ", "$"
+    textoNombreJugador2 db "Ingrese nickname2 (5 letras): ", "$"
 .CODE
 
     MOV AX, @data
@@ -904,6 +956,7 @@ ENDM
                 BorrarPantalla
                 CambiarModoTexto
                 IniciarTablero
+                MOV turno, 0
                 ImprimirCadenaPersonalizada textoOpcion, 0, 0Bh, 28, 0, 1
                 ImprimirCadenaPersonalizada opcionTotito1, 0, 0Ch, 13, 0, 3
                 ImprimirCadenaPersonalizada opcionTotito2, 0, 0Ah, 11, 0, 5
@@ -948,11 +1001,13 @@ ENDM
                 BorrarPantalla
                 PedirMovs
                 BorrarPantalla
+                ComprobarCasilla
+                BorrarPantalla
+                JuegoVsJugadorMacro
+                BorrarPantalla
                 ImprimirTablero
                 CapturarOpcion opcion
                 BorrarPantalla
-                ComprobarCasilla
-                JuegoVsJugadorMacro
                 ComprobarGanador
                 JMP JuegoVsJugador
 
