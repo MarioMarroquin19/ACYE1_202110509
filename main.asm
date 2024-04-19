@@ -231,11 +231,13 @@ PedirMovimiento MACRO
     MOV colMov, AL
 ENDM
 
+
 .MODEL small
 
 .STACK 100h
 
 .DATA
+    gameBoard db 9 DUP(0)  ; Tablero de 3x3, inicializado a 0
     posicionesColumna db 35, 145, 220
     posicionesFila db 15, 80, 150
 
@@ -246,6 +248,7 @@ ENDM
     pedirFila db "Ingrese La Fila: ", "$"
     pedirColumna db "Ingrese La Columna: ", "$"
     turno db 0
+
 .CODE
     MOV AX, @data
     MOV DS, AX
