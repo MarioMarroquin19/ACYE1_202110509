@@ -500,7 +500,7 @@ JuegoVsJugadorMacro MACRO
 
             MOV fila, AL
             MOV columna, DL
-            
+
             DibujarOenTablero
             INC SI
             JMP ContadorBX
@@ -575,6 +575,7 @@ ComprobarGanador MACRO
     ComprobarFila21:
         MOV BL, 0
         MOV BH, 0
+        MOV SI, 3
         JMP ComprobarFila2
 
     ComprobarFila1:
@@ -618,10 +619,11 @@ ComprobarGanador MACRO
     ComprobarFila31:
         MOV BL, 0
         MOV BH, 0
+        MOV SI, 6
         JMP ComprobarFila3
     
     ComprobarFila2:
-        MOV AL, tablero[SI];3 
+        MOV AL, tablero[SI]
         INC SI
         CMP AL, 88
         JE contarX1
@@ -644,11 +646,11 @@ ComprobarGanador MACRO
 
     ContarColumnas2:
         CMP SI, 9
-        JB ComprobarFila2
+        JB ComprobarFila3
         JE ReiniciarColumnas
 
     ComprobarFila3:
-        MOV AL, tablero[SI];6
+        MOV AL, tablero[SI]
         INC SI
         CMP AL, 88
         JE contarX2
@@ -668,12 +670,11 @@ ComprobarGanador MACRO
         CMP BH, 3
         JE GanadorFilaO
         JMP ContarColumnas2
-
-
-
-
-
-    ;comprobar ahora columnas
+        
+    
+    
+    
+    ;AHORA LAS COLUMNAS
     ReiniciarColumnas:
         MOV SI, 0
         MOV CL, 0 ; CONTADOR DE COLUMNAS
@@ -682,6 +683,12 @@ ComprobarGanador MACRO
         MOV DH, 0; CONTADOR DE EQUIS
         MOV BL, 0; CONTADOR DE X
         MOV BH, 0; CONTADOR DE O
+        JMP ContarColumnas31
+    
+    ContarColumnas31:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 0
         JMP ContarColumnas3
 
     ContarColumnas3:
@@ -712,14 +719,11 @@ ComprobarGanador MACRO
         JMP ContarColumnas3
 
 
-
-
     ComprobarColumna21:
         MOV BL, 0
         MOV BH, 0
         MOV SI, 1
         JMP ComprobarColumna2
-    
 
     ContarColumnas4:
         CMP SI, 8
@@ -747,8 +751,6 @@ ComprobarGanador MACRO
         CMP BH, 3
         JE GanadorFilaO
         JMP ContarColumnas4
-
-
 
 
     ContarColumnas5:
@@ -784,9 +786,11 @@ ComprobarGanador MACRO
         JE GanadorFilaO
         JMP ContarColumnas5
 
-    
 
-    ;Diagonales ahora
+
+
+
+        ;Diagonales ahora
     Reiniciar1:
         MOV SI, 0
         MOV CL, 0 ; CONTADOR DE COLUMNAS
@@ -795,12 +799,18 @@ ComprobarGanador MACRO
         MOV DH, 0; CONTADOR DE EQUIS
         MOV BL, 0; CONTADOR DE X
         MOV BH, 0; CONTADOR DE O
+        JMP ComprobarDiagonalIzq1
+
+    ComprobarDiagonalIzq1:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 0
         JMP ContarDiagonales
     
     ContarDiagonales:
-    CMP SI, 9
-    JB ComprobarDiagonalIzq
-    JE ComprobarDiagonalDer1
+        CMP SI, 9
+        JB ComprobarDiagonalIzq
+        JE ComprobarDiagonalDer1
 
     ComprobarDiagonalIzq:
         MOV AL, tablero[SI]
@@ -905,6 +915,8 @@ ENDM
     textoCasillaOcupada db "La casilla esta ocupada", "$"
     textoNombreJugador1 db "Ingrese nickname1 (5 letras): ", "$"
     textoNombreJugador2 db "Ingrese nickname2 (5 letras): ", "$"
+    nombreJugador1 db 5 dup(' '),'$'
+    nombreJugador2 db 5 dup(' '),'$'
 .CODE
 
     MOV AX, @data
@@ -1005,12 +1017,8 @@ ENDM
                 BorrarPantalla
                 JuegoVsJugadorMacro
                 BorrarPantalla
-                ImprimirTablero
-                CapturarOpcion opcion
-                BorrarPantalla
                 ComprobarGanador
                 JMP JuegoVsJugador
-
 
             ReportesJuego:
                 JE auxMenu
