@@ -7,6 +7,7 @@ ComprobarGanadorIA MACRO
     LOCAL GanadorFilaX, GanadorFilaO, SalirGanador
     LOCAL contarX, contarO, contarX1, contarO1, contarX2, contarO2, contarX3, contarO3, contarX4, contarO4, contarX5, contarO5, contarX6, contarO6, contarX7, contarO7
     LOCAL ReiniciarColumnas, Reiniciar1
+    LOCAL auxFila2, auxFila3, auxFila31, auxGanadorFilaX, auxGanadorFilaO, auxGanadorFilaX1, auxGanadorFilaO1, auxGanadorFilaX2, auxGanadorFilaO2, auxGanadorFilaX3, auxGanadorFilaO3, auxGanadorFilaX4, auxGanadorFilaO4, auxGanadorFilaX5, auxGanadorFilaO5
     
     MOV SI, 0
     MOV CL, 0 ; CONTADOR DE COLUMNAS
@@ -28,7 +29,7 @@ ComprobarGanadorIA MACRO
         JMP auxFila2
 
     ComprobarFila1:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         INC SI
         CMP AL, 88
         JE contarX
@@ -86,7 +87,7 @@ ComprobarGanadorIA MACRO
         JMP GanadorFilaO
     
     ComprobarFila2:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         INC SI
         CMP AL, 88
         JE contarX1
@@ -116,7 +117,7 @@ ComprobarGanadorIA MACRO
         JE ReiniciarColumnas
 
     ComprobarFila3:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         INC SI
         CMP AL, 88
         JE contarX2
@@ -128,17 +129,14 @@ ComprobarGanadorIA MACRO
     contarX2:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX
         JMP ContarColumnas2
     
     contarO2:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO
         JMP ContarColumnas2
-        
-    
-    
     
     ;AHORA LAS COLUMNAS
     ReiniciarColumnas:
@@ -169,7 +167,7 @@ ComprobarGanadorIA MACRO
         JE ComprobarColumna21
 
     ComprobarColumna1:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         ADD SI, 3
         CMP AL, 88
         JE contarX3
@@ -210,7 +208,7 @@ ComprobarGanadorIA MACRO
         JE ComprobarColumna31
     
     ComprobarColumna2:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         ADD SI, 3
         CMP AL, 88
         JE contarX4
@@ -250,7 +248,7 @@ ComprobarGanadorIA MACRO
         JMP GanadorFilaO
 
     ComprobarColumna3:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         ADD SI, 3
         CMP AL, 88
         JE contarX5
@@ -302,7 +300,7 @@ ComprobarGanadorIA MACRO
         JE ComprobarDiagonalDer1
 
     ComprobarDiagonalIzq:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         ADD SI, 4
         CMP AL, 88
         JE contarX6
@@ -343,7 +341,7 @@ ComprobarGanadorIA MACRO
 
 
     ComprobarDiagonalDer:
-        MOV AL, tableroIA[SI]
+        MOV AL, tablero[SI]
         ADD SI, 2
         CMP AL, 88
         JE contarX7
@@ -369,7 +367,7 @@ ComprobarGanadorIA MACRO
 
         EmpateE:
             INC SI
-            CMP tableroIA[SI], 32
+            CMP tablero[SI], 32
             JE SalirGanador
             JMP casillaOcupadaEmpate
         

@@ -262,8 +262,8 @@ InfoEstudiante MACRO
     MostrarTextoColor textoPracticaAdorno, 0Bh, 31
     MostrarTexto ln
     MostrarTexto ln
-    MostrarTexto textoInfo
-    MostrarTexto textoInfo1
+    ImprimirCadenaPersonalizada textoInfo, 0, 0Ah, 142, 0, 5
+    ImprimirCadenaPersonalizada textoInfo1, 0, 09h, 77, 0, 8
     MostrarTexto ln
     MostrarTexto ln
     MostrarTexto textoRegresar
@@ -276,29 +276,54 @@ Delay MACRO tiempo
 ENDM
 
 PedirMovs MACRO 
-    ; Mostrar mensaje para ingresar movimientos
-    ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Bh, 38, 0, 0
-    CapturarOpcion fila    ; Captura el valor de 'fila' en formato ASCII
-    ImprimirCadenaPersonalizada puntoYcoma, 0, 0Bh, 1, 39, 0
-    CapturarOpcion columna ; Captura el valor de 'columna' en formato ASCII
+    LOCAL MensajesEntrada, AlertaFilaAnuncio, AlertaColumnaAnuncio, SalirMovs
+    
+    MensajesEntrada:
+        ImprimirCadenaPersonalizada textoIngreseMov, 0, 0Bh, 38, 0, 0
+        CapturarOpcion fila    ; Captura el valor de 'fila' en formato ASCII
 
-    ; Convertir de ASCII a valor entero (index base cero)
+        CMP fila, 49   
+        JB AlertaFilaAnuncio   
+
+        CMP fila, 51
+        JA AlertaFilaAnuncio
+
+        ImprimirCadenaPersonalizada puntoYcoma, 0, 0Bh, 1, 39, 0
+        CapturarOpcion columna ; Captura el valor de 'columna' en formato ASCII
+
+        CMP columna, 49
+        JB AlertaColumnaAnuncio
+
+        CMP columna, 51
+        JA AlertaColumnaAnuncio   
+
     MOV AL, fila    ; Mueve el valor ASCII de 'fila' a AL
     MOV BL, columna ; Mueve el valor ASCII de 'columna' a BL
     SUB AL, 49      ; Convierte AL de ASCII a índice numérico (0 basado)
     SUB BL, 49      ; Convierte BL de ASCII a índice numérico (0 basado)
-
-    ; Retornar los valores convertidos a las variables originales
     MOV fila, AL    ; Devuelve el valor convertido a la variable 'fila'
     MOV columna, BL ; Devuelve el valor convertido a la variable 'columna'
-
-    ; Calcular el índice lineal para un tablero de 3x3
     MOV AH, 0       ; Limpia AH para usar AX completo
     MOV CL, 3       ; Establece 3 como el número de columnas en el tablero
     MUL CL          ; Multiplica AL por 3 (número de columnas)
     ADD AX, BX      ; Suma el resultado con BL (columna convertida)
-
     MOV SI, AX      ; Mueve el resultado final a SI
+    JMP SalirMovs  
+
+    AlertaFilaAnuncio:
+        ImprimirCadenaPersonalizada textoFilaInvalida, 0, 0Eh, 23, 0, 3
+        CapturarOpcion opcion
+        BorrarPantalla
+        JMP MensajesEntrada
+
+    AlertaColumnaAnuncio:
+        ImprimirCadenaPersonalizada textoColumnaInvalida, 0, 0Eh, 26, 0, 3
+        CapturarOpcion opcion
+        BorrarPantalla
+        JMP MensajesEntrada
+    
+    SalirMovs:
+
 ENDM
 
 ; Macro para imprimir el valor de SI como decimal
@@ -561,7 +586,7 @@ ComprobarGanador MACRO
         MOV BL, 0
         MOV BH, 0
         MOV SI, 3
-        JMP ComprobarFila2
+        JMP auxFila2
 
     ComprobarFila1:
         MOV AL, tablero[SI]
@@ -579,18 +604,23 @@ ComprobarGanador MACRO
         JE GanadorFilaX
         JMP ContarColumnas
     
+    auxFila2:
+        JMP auxFila3
+
     contarO:
         INC BH
         CMP BH, 3
         JE GanadorFilaO
         JMP ContarColumnas
 
-    
     GanadorFilaX:
         ImprimirCadenaPersonalizada GanadorX , 0, 0Ah, 18, 10, 1
         ImprimirCadenaPersonalizada PerderO , 0, 0Ah, 21, 10, 3
         CapturarOpcion opcion
         JMP SalirGanador
+    
+    auxFila3:
+        JMP ComprobarFila2
     
     GanadorFilaO:
         ImprimirCadenaPersonalizada GanadorO , 0, 0Ah, 19, 10, 1
@@ -607,7 +637,13 @@ ComprobarGanador MACRO
         MOV BL, 0
         MOV BH, 0
         MOV SI, 6
-        JMP ComprobarFila3
+        JMP auxFila31
+    
+    auxGanadorFilaX:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO:
+        JMP GanadorFilaO
     
     ComprobarFila2:
         MOV AL, tablero[SI]
@@ -622,13 +658,16 @@ ComprobarGanador MACRO
     contarX1:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX
         JMP ContarColumnas1
+    
+    auxFila31:
+        JMP ComprobarFila3
     
     contarO1:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO
         JMP ContarColumnas1
 
     ContarColumnas2:
@@ -649,17 +688,14 @@ ComprobarGanador MACRO
     contarX2:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX
         JMP ContarColumnas2
     
     contarO2:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO
         JMP ContarColumnas2
-        
-    
-    
     
     ;AHORA LAS COLUMNAS
     ReiniciarColumnas:
@@ -677,6 +713,12 @@ ComprobarGanador MACRO
         MOV BH, 0
         MOV SI, 0
         JMP ContarColumnas3
+    
+    auxGanadorFilaX1:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO1:
+        JMP GanadorFilaO
 
     ContarColumnas3:
         CMP SI, 7
@@ -696,14 +738,21 @@ ComprobarGanador MACRO
     contarX3:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX1
         JMP ContarColumnas3
     
     contarO3:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO1
         JMP ContarColumnas3
+
+    
+    auxGanadorFilaX2:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO2:
+        JMP GanadorFilaO
 
 
     ComprobarColumna21:
@@ -730,13 +779,13 @@ ComprobarGanador MACRO
     contarX4:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX2
         JMP ContarColumnas4
     
     contarO4:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO2
         JMP ContarColumnas4
 
 
@@ -750,6 +799,12 @@ ComprobarGanador MACRO
         MOV BH, 0
         MOV SI, 2
         JMP ComprobarColumna3
+    
+    auxGanadorFilaX3:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO3:
+        JMP GanadorFilaO
 
     ComprobarColumna3:
         MOV AL, tablero[SI]
@@ -764,16 +819,14 @@ ComprobarGanador MACRO
     contarX5:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX3
         JMP ContarColumnas5
     
     contarO5:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO3
         JMP ContarColumnas5
-
-
 
         ;Diagonales ahora
     Reiniciar1:
@@ -791,6 +844,12 @@ ComprobarGanador MACRO
         MOV BH, 0
         MOV SI, 0
         JMP ContarDiagonales
+    
+    auxGanadorFilaX4:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO4:
+        JMP GanadorFilaO
     
     ContarDiagonales:
         CMP SI, 9
@@ -810,16 +869,14 @@ ComprobarGanador MACRO
     contarX6:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX4
         JMP ContarDiagonales
     
     contarO6:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO4
         JMP ContarDiagonales
-    
-
     
     ComprobarDiagonalDer1:
         MOV BL, 0
@@ -831,6 +888,12 @@ ComprobarGanador MACRO
         CMP SI, 7
         JB ComprobarDiagonalDer
         JE ConsiderarEmpate
+
+    auxGanadorFilaX5:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO5:
+        JMP GanadorFilaO
 
     ComprobarDiagonalDer:
         MOV AL, tablero[SI]
@@ -845,13 +908,13 @@ ComprobarGanador MACRO
     contarX7:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX5
         JMP ContarDiagonales1
     
     contarO7:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO5
         JMP ContarDiagonales1
     
     ConsiderarEmpate:
@@ -1056,6 +1119,8 @@ ComprobarGanadorIA MACRO
     LOCAL GanadorFilaX, GanadorFilaO, SalirGanador
     LOCAL contarX, contarO, contarX1, contarO1, contarX2, contarO2, contarX3, contarO3, contarX4, contarO4, contarX5, contarO5, contarX6, contarO6, contarX7, contarO7
     LOCAL ReiniciarColumnas, Reiniciar1
+    LOCAL auxFila2, auxFila3, auxFila31, auxGanadorFilaX, auxGanadorFilaO, auxGanadorFilaX1, auxGanadorFilaO1, auxGanadorFilaX2
+    LOCAL auxGanadorFilaO2, auxGanadorFilaX3, auxGanadorFilaO3, auxGanadorFilaX4, auxGanadorFilaO4, auxGanadorFilaX5, auxGanadorFilaO5
     
     MOV SI, 0
     MOV CL, 0 ; CONTADOR DE COLUMNAS
@@ -1101,7 +1166,6 @@ ComprobarGanadorIA MACRO
         JE GanadorFilaO
         JMP ContarColumnas
 
-    
     GanadorFilaX:
         ImprimirCadenaPersonalizada GanadorX , 0, 0Ah, 18, 10, 1
         ImprimirCadenaPersonalizada PerderO , 0, 0Ah, 21, 10, 3
@@ -1177,17 +1241,14 @@ ComprobarGanadorIA MACRO
     contarX2:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX
         JMP ContarColumnas2
     
     contarO2:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO
         JMP ContarColumnas2
-        
-    
-    
     
     ;AHORA LAS COLUMNAS
     ReiniciarColumnas:
@@ -1239,13 +1300,11 @@ ComprobarGanadorIA MACRO
         JE auxGanadorFilaO1
         JMP ContarColumnas3
 
-    
     auxGanadorFilaX2:
         JMP GanadorFilaX
     
     auxGanadorFilaO2:
         JMP GanadorFilaO
-
 
     ComprobarColumna21:
         MOV BL, 0
@@ -1279,7 +1338,6 @@ ComprobarGanadorIA MACRO
         CMP BH, 3
         JE auxGanadorFilaO2
         JMP ContarColumnas4
-
 
     ContarColumnas5:
         CMP SI, 9
@@ -1369,7 +1427,6 @@ ComprobarGanadorIA MACRO
         CMP BH, 3
         JE auxGanadorFilaO4
         JMP ContarDiagonales
-    
 
     ComprobarDiagonalDer1:
         MOV BL, 0
@@ -1387,7 +1444,6 @@ ComprobarGanadorIA MACRO
     
     auxGanadorFilaO5:
         JMP GanadorFilaO
-
 
     ComprobarDiagonalDer:
         MOV AL, tableroIA[SI]
@@ -1433,10 +1489,37 @@ ComprobarGanadorIA MACRO
     SalirGanador:
 ENDM
 
+CapturarNombre MACRO regNombre
+    MOV AH, 3fh
+    MOV BX, 00H
+    MOV CX, 5
+    MOV DX, OFFSET regNombre
+    INT 21h
+ENDM
+
+PedirNombre1 MACRO 
+    CambiarModoTexto
+    ImprimirCadenaPersonalizada textoNombreJugador1, 0, 0Ah, 30, 5, 1
+    CapturarNombre nombreJugador1
+    CambiarModoTexto    
+ENDM
+
+PedirNombre MACRO
+    CambiarModoTexto
+    ImprimirCadenaPersonalizada textoNombreJugador1, 0, 0Ah, 30, 5, 1
+    CapturarNombre nombreJugador1
+    CambiarModoTexto
+    ImprimirCadenaPersonalizada textoNombreJugador2, 0, 0Ah, 30, 5, 3
+    CapturarNombre nombreJugador2
+ENDM
+
+
 .MODEL small
 .STACK 100h
 
 .DATA
+    textoColumnaInvalida db "Numero de columna invalida", "$"
+    textoFilaInvalida db "Numero de fila invalida", "$"
     equis db "Hay una equis", "$"
     circulo db "Hay un circulo", "$"
     GanadorX db "GANO JUGADOR 1 (X)", "$"
@@ -1528,7 +1611,7 @@ ENDM
             
             Salir2:
                 SalirMacro
-
+            
             NuevoJuego:
                 BorrarPantalla
                 CambiarModoTexto
@@ -1541,28 +1624,31 @@ ENDM
                 ImprimirCadenaPersonalizada opcionTotito4, 0, 0Eh, 13, 0, 9
                 ImprimirCadenaPersonalizada textoIngresarOpcion, 0, 0Fh, 22, 0, 11
                 CapturarOpcion opcion ;evniarme al modo de juego seleccionado
-
                 CMP opcion, 49; (1) 1 vs CPU
-                    JE JuegoVsIA
-
+                JE UNOvIA
                 CMP opcion, 50; (2) 1 vs 1
-                    JE auxJuegoVsJugador
+                JE UNOvUNO
+                CMP opcion, 51; (3) Reportes
+                JE AuxMenu1
+                CMP opcion, 52; (4) Regresar 
+                JE AuxMenu1
             
+            AuxMenu1: 
+                JMP Menu
+            
+            UNOvIA:
+                PedirNombre1
+                JMP JuegoVsIA
+            
+            UNOvUNO:
+                PedirNombre
+                JMP auxJuegoVsJugador
+
             auxNuevoJuego:
                 JMP NuevoJuego
 
-                CMP opcion, 51; (3) Reportes
-                    JE auxReportesJuego
-
-                CMP opcion, 52; (4) Regresar 
-                    CambiarModoTexto
-                    JMP Menu
-
             auxJuegoVsJugador:
                 JMP JuegoVsJugador
-
-            auxReportesJuego:
-                JMP ReportesJuego
 
             JuegoVsIA:
                 BorrarPantalla
@@ -1582,9 +1668,6 @@ ENDM
                 ComprobarGanadorIA       ;saltos fuera de rango
                 JMP JuegoVsIA
             
-            auxMenu:
-                JMP Menu
-
             auxNuevoJuego1:
                 JMP auxNuevoJuego
 
@@ -1605,9 +1688,9 @@ ENDM
                 BorrarPantalla
                 ComprobarGanador ;saltos fuera de rango xd
                 JMP JuegoVsJugador
-
-            ReportesJuego:
-                JE auxMenu ;saltos fuera de rango xd
+            
+            auxMenu:
+                JMP Menu
 
             Animacion3:
                 JMP Animacion
