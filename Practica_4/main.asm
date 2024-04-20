@@ -2137,12 +2137,12 @@ ENDM
 
 Animacion7 MACRO charsPerRow, cantRows, bufferImagen
     LOCAL Ciclo, PrintArt, TerminarCiclo, addOffset
-    MOV CX, 80               ; Número de columnas
-    SUB CX, charsPerRow      ; Ajustar para el ancho del arte ASCII
+    MOV CX, 25
+    ; SUB CX, cantRows
 
-    MOV fila, 0              ; Comenzar en la fila superior
+    MOV fila, 0                   ; Iniciar en la primera fila
     MOV filaActual, 0
-    MOV columna, 79          ; Comenzar en la última columna
+    MOV columna, 99               ; Iniciar en la última columna de una pantalla de 80 caracteres
 
     Ciclo:
         PUSH CX
@@ -2150,7 +2150,7 @@ Animacion7 MACRO charsPerRow, cantRows, bufferImagen
         
         MOV CX, cantRows
         DEC CX
-        MOV AX, charsPerRow
+        MOV AX, 0
 
         addOffset:
             SUB saltoCadena, AX
@@ -2161,7 +2161,7 @@ Animacion7 MACRO charsPerRow, cantRows, bufferImagen
         PrintArt:
             PUSH CX
             PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 6
-            INC filaActual
+            INC filaActual            ; Incrementar la fila para ir hacia abajo
 
             MOV AX, charsPerRow
             ADD saltoCadena, AX
@@ -2176,10 +2176,10 @@ Animacion7 MACRO charsPerRow, cantRows, bufferImagen
 
         LeerKeyboardBuffer
 
-        DEC columna               ; Mover hacia la izquierda en lugar de derecha
-
-        INC fila
+        DEC columna                ; Decrementar la columna para ir hacia la izquierda
+        
         MOV AL, fila
+        INC fila
         MOV filaActual, AL
 
         CMP CX, 0
@@ -2191,23 +2191,36 @@ Animacion7 MACRO charsPerRow, cantRows, bufferImagen
 ENDM
 
 Animacion8 MACRO charsPerRow, cantRows, bufferImagen
-    LOCAL Ciclo, PrintArt, TerminarCiclo
-    MOV columna, 80
-    MOV CX, 80
-    SUB CX, charsPerRow
+    LOCAL Ciclo, PrintArt, TerminarCiclo, addOffset
+    MOV CX, 25
+    ; SUB CX, cantRows
+
+    MOV fila, 30                  ; Iniciar en la primera fila
+    MOV filaActual, 30
+    MOV columna, 99               ; Iniciar en la última columna de una pantalla de 80 caracteres
 
     Ciclo:
-        MOV filaActual, 8
         PUSH CX
         MOV saltoCadena, OFFSET bufferImagen
+        
+        MOV CX, cantRows
+        DEC CX
+        MOV AX, 0
 
+        addOffset:
+            ADD saltoCadena, AX
+            LOOP addOffset
+
+        XOR AX, AX
         MOV CX, cantRows
         PrintArt:
             PUSH CX
-            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 5
-            INC filaActual
+            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 6
+            DEC filaActual            ; Incrementar la fila para ir hacia abajo
+
             MOV AX, charsPerRow
             ADD saltoCadena, AX
+
             POP CX
             LOOP PrintArt
 
@@ -2218,8 +2231,12 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
 
         LeerKeyboardBuffer
 
-        DEC columna
+        DEC columna                ; Decrementar la columna para ir hacia la izquierda
         
+        MOV AL, fila
+        dec fila
+        MOV filaActual, AL
+
         CMP CX, 0
         JE TerminarCiclo
         LimpiarConsola
