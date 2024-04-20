@@ -1,300 +1,341 @@
-TableroTotito MACRO
-    LOCAL Barra1, Barra2, Barra3, Barra4, SalirTablero
-    XOR AX, AX
-    XOR CX, CX
-    XOR DX, DX
-
-    MOV AL, 09h
-    MOV CX, 105
-    MOV DX, 0
-    MOV AH, 0Ch
+ComprobarGanadorIA MACRO
+    LOCAL ContarColumnas, ContarColumnas1, ContarColumnas2, ContarColumnas3, ContarColumnas4, ContarColumnas5, ContarColumnas31
+    LOCAL ComprobarFila1, ComprobarFila2, ComprobarFila21, ComprobarFila3, ComprobarFila31
+    LOCAL ComprobarColumna1, ComprobarColumna2, ComprobarColumna21, ComprobarColumna3, ComprobarColumna31
+    LOCAL ComprobarDiagonalIzq, ComprobarDiagonalDer, ComprobarDiagonalIzq1, ComprobarDiagonalDer1
+    LOCAL ContarDiagonales, ContarDiagonales1, ConsiderarEmpate, casillaOcupadaEmpate, EmpateE, EmpateGanador
+    LOCAL GanadorFilaX, GanadorFilaO, SalirGanador
+    LOCAL contarX, contarO, contarX1, contarO1, contarX2, contarO2, contarX3, contarO3, contarX4, contarO4, contarX5, contarO5, contarX6, contarO6, contarX7, contarO7
+    LOCAL ReiniciarColumnas, Reiniciar1
     
-    Barra1:
-        INT 10h
-        
-        INC DX
-        
-        CMP DX, 200
-        JB Barra1
-        
-        INC CX
-        
-        CMP CX, 110
-        JA ContinuarBarra2
-        MOV DX, 0
-        JMP Barra1
-        
-    ContinuarBarra2:
-        MOV CX, 210
-        MOV DX, 0
-        
-    Barra2:
-        INT 10h
-        
-        INC DX
-        
-        CMP DX, 200
-        JB Barra2
-        
-        INC CX
-        
-        CMP CX, 215
-        JA ContinuarBarra3
-        MOV DX, 0
-        JMP Barra2
-
-    ContinuarBarra3:
-        MOV CX, 0
-        MOV DX, 60
-
-    Barra3:
-        INT 10h
-
-        INC CX
-
-        CMP CX, 320
-        JB Barra3
-
-        INC DX
-
-        CMP DX, 65
-        JA ContinuarBarra4
-        MOV CX, 0
-        JMP Barra3
-
-
-    ContinuarBarra4:
-        MOV CX, 0
-        MOV DX, 125
-
-    Barra4:
-        INT 10h
-
-        INC CX
-
-        CMP CX, 320
-        JB Barra4
-
-        INC DX
-
-        CMP DX, 130
-        JA SalirTablero
-        MOV CX, 0
-        JMP Barra4
-
-    SalirTablero:
-ENDM
-
-SpriteX MACRO
-    LOCAL Ciclo1, Ciclo2
-    XOR AX, AX
-    XOR BX, BX
-    XOR CX, CX
-    XOR DX, DX
-
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
-
-    MOV BL, filaMov
-    MOV DL, posicionesFila[BX]
-
-    MOV AL, 6
-    MOV AH, 0Ch
-    MOV BL, 0
-
-    Ciclo1:
-        INT 10h
-
-        INC CX
-        INC DX
-        INC BL
-        CMP BL, 30
-        JNE Ciclo1
-
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
-    ADD CL, 30
-
-    MOV BL, filaMov
-    MOV DL, posicionesFila[BX]
-
-    MOV BL, 0
-
-    Ciclo2:
-        INT 10h
-
-        DEC CX
-        INC DX
-        INC BL
-        CMP BL, 30
-        JNE Ciclo2
-ENDM
-
-SpriteO MACRO
-    LOCAL Part1, Part2, Part3, Part4
-    XOR AX, AX
-    XOR BX, BX
-    XOR CX, CX
-    XOR DX, DX
-
-    MOV AL, 10
-    MOV AH, 0Ch
-
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
+    MOV SI, 0
+    MOV CL, 0 ; CONTADOR DE COLUMNAS
+    MOV CH, 0 ; CONTADOR DE FILAS
+    MOV DL, 0; CONTADOR DE DIAGONALES
+    MOV DH, 0; CONTADOR DE EQUIS
+    MOV BL, 0; CONTADOR DE X
+    MOV BH, 0; CONTADOR DE O
     
-    MOV BL, filaMov
-    MOV DL, posicionesFila[BX]
-
-    MOV BL, 0
-
-    Part1:
-        INT 10h
-
-        INC CX
-        INC BL
-        CMP BL, 31
-        JNE Part1
-
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
-
-    MOV BL, 0
-
-    Part2:
-        INT 10h
-
-        INC DX
-        INC BL
-        CMP BL, 31
-        JNE Part2
-
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
-    ADD CL, 30
+    ContarColumnas:
+        CMP SI, 3
+        JB ComprobarFila1
+        JE ComprobarFila21
     
-    MOV BL, filaMov
-    MOV DL, posicionesFila[BX]
-    ADD DL, 30
+    ComprobarFila21:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 3
+        JMP ComprobarFila2
 
-    MOV BL, 0
-
-    Part3:
-        INT 10h
-
-        DEC CX
+    ComprobarFila1:
+        MOV AL, tableroIA[SI]
+        INC SI
+        CMP AL, 88
+        JE contarX
+        CMP AL, 79
+        JE contarO
+        CMP AL, 32; si es espacio en blanco
+        JE ComprobarFila21
+    
+    contarX:
         INC BL
-        CMP BL, 31
-        JNE Part3
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas
+    
+    contarO:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas
 
-    MOV BL, colMov
-    MOV CL, posicionesColumna[BX]
-    ADD CL, 30
+    
+    GanadorFilaX:
+        ImprimirCadenaPersonalizada GanadorX , 0, 0Ah, 18, 10, 1
+        ImprimirCadenaPersonalizada PerderO , 0, 0Ah, 21, 10, 3
+        CapturarOpcion opcion
+        JMP SalirGanador
+    
+    GanadorFilaO:
+        ImprimirCadenaPersonalizada GanadorO , 0, 0Ah, 19, 10, 1
+        ImprimirCadenaPersonalizada PerderX , 0, 0Ah, 20, 10, 3
+        CapturarOpcion opcion
+        JMP SalirGanador
+    
+    ContarColumnas1:
+        CMP SI, 6
+        JB ComprobarFila2
+        JE ComprobarFila31
+    
+    ComprobarFila31:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 6
+        JMP ComprobarFila3
+    
+    ComprobarFila2:
+        MOV AL, tableroIA[SI]
+        INC SI
+        CMP AL, 88
+        JE contarX1
+        CMP AL, 79
+        JE contarO1
+        CMP AL, 32; si es espacio en blanco
+        JE ComprobarFila31
 
-    MOV BL, 0
-
-    Part4:
-        INT 10h
-
-        DEC DX
+    contarX1:
         INC BL
-        CMP BL, 31
-        JNE Part4
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas1
+    
+    contarO1:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas1
+
+    ContarColumnas2:
+        CMP SI, 9
+        JB ComprobarFila3
+        JE ReiniciarColumnas
+
+    ComprobarFila3:
+        MOV AL, tableroIA[SI]
+        INC SI
+        CMP AL, 88
+        JE contarX2
+        CMP AL, 79
+        JE contarO2
+        CMP AL, 32; si es espacio en blanco
+        JE ReiniciarColumnas
+    
+    contarX2:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas2
+    
+    contarO2:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas2
+        
+    
+    
+    
+    ;AHORA LAS COLUMNAS
+    ReiniciarColumnas:
+        MOV SI, 0
+        MOV CL, 0 ; CONTADOR DE COLUMNAS
+        MOV CH, 0 ; CONTADOR DE FILAS
+        MOV DL, 0; CONTADOR DE DIAGONALES
+        MOV DH, 0; CONTADOR DE EQUIS
+        MOV BL, 0; CONTADOR DE X
+        MOV BH, 0; CONTADOR DE O
+        JMP ContarColumnas31
+    
+    ContarColumnas31:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 0
+        JMP ContarColumnas3
+
+    ContarColumnas3:
+        CMP SI, 7
+        JB ComprobarColumna1
+        JE ComprobarColumna21
+
+    ComprobarColumna1:
+        MOV AL, tableroIA[SI]
+        ADD SI, 3
+        CMP AL, 88
+        JE contarX3
+        CMP AL, 79
+        JE contarO3
+        CMP AL, 32; si es espacio en blanco
+        JE ComprobarColumna21   
+    
+    contarX3:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas3
+    
+    contarO3:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas3
+
+
+    ComprobarColumna21:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 1
+        JMP ComprobarColumna2
+
+    ContarColumnas4:
+        CMP SI, 8
+        JB ComprobarColumna2
+        JE ComprobarColumna31
+    
+    ComprobarColumna2:
+        MOV AL, tableroIA[SI]
+        ADD SI, 3
+        CMP AL, 88
+        JE contarX4
+        CMP AL, 79
+        JE contarO4
+        CMP AL, 32; si es espacio en blanco
+        JE ComprobarColumna31
+    
+    contarX4:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas4
+    
+    contarO4:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas4
+
+
+    ContarColumnas5:
+        CMP SI, 9
+        JB ComprobarColumna3
+        JE Reiniciar1
+
+    ComprobarColumna31:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 2
+        JMP ComprobarColumna3
+
+    ComprobarColumna3:
+        MOV AL, tableroIA[SI]
+        ADD SI, 3
+        CMP AL, 88
+        JE contarX5
+        CMP AL, 79
+        JE contarO5
+        CMP AL, 32; si es espacio en blanco
+        JE Reiniciar1
+    
+    contarX5:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarColumnas5
+    
+    contarO5:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarColumnas5
+
+
+
+        ;Diagonales ahora
+    Reiniciar1:
+        MOV SI, 0
+        MOV CL, 0 ; CONTADOR DE COLUMNAS
+        MOV CH, 0 ; CONTADOR DE FILAS
+        MOV DL, 0; CONTADOR DE DIAGONALES
+        MOV DH, 0; CONTADOR DE EQUIS
+        MOV BL, 0; CONTADOR DE X
+        MOV BH, 0; CONTADOR DE O
+        JMP ComprobarDiagonalIzq1
+
+    ComprobarDiagonalIzq1:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 0
+        JMP ContarDiagonales
+    
+    ContarDiagonales:
+        CMP SI, 9
+        JB ComprobarDiagonalIzq
+        JE ComprobarDiagonalDer1
+
+    ComprobarDiagonalIzq:
+        MOV AL, tableroIA[SI]
+        ADD SI, 4
+        CMP AL, 88
+        JE contarX6
+        CMP AL, 79
+        JE contarO6
+        CMP AL, 32; si es espacio en blanco
+        JE ComprobarDiagonalDer1
+    
+    contarX6:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarDiagonales
+    
+    contarO6:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarDiagonales
+    
+
+    
+    ComprobarDiagonalDer1:
+        MOV BL, 0
+        MOV BH, 0
+        MOV SI, 2
+        JMP ContarDiagonales1
+    
+    ContarDiagonales1:
+        CMP SI, 7
+        JB ComprobarDiagonalDer
+        JE ConsiderarEmpate
+
+    ComprobarDiagonalDer:
+        MOV AL, tableroIA[SI]
+        ADD SI, 2
+        CMP AL, 88
+        JE contarX7
+        CMP AL, 79
+        JE contarO7
+        CMP AL, 32; si es espacio en blanco
+        JE ConsiderarEmpate
+    
+    contarX7:
+        INC BL
+        CMP BL, 3
+        JE GanadorFilaX
+        JMP ContarDiagonales1
+    
+    contarO7:
+        INC BH
+        CMP BH, 3
+        JE GanadorFilaO
+        JMP ContarDiagonales1
+    
+    ConsiderarEmpate:
+        MOV SI, 0
+
+        EmpateE:
+            INC SI
+            CMP tableroIA[SI], 32
+            JE SalirGanador
+            JMP casillaOcupadaEmpate
+        
+        casillaOcupadaEmpate:
+            CMP SI, 8
+            JE EmpateGanador
+            JNE EmpateE
+
+        EmpateGanador:
+            ImprimirCadenaPersonalizada Empate , 0, 0Ah, 6, 10, 1
+            CapturarOpcion opcion
+            JMP SalirGanador
+
+    SalirGanador:
 ENDM
-
-PedirMovimiento MACRO
-    MOV AX, 03h
-    INT 10h
-
-    MOV Ah, 09h
-    LEA DX, pedirFila
-    INT 21h
-
-    MOV AH, 1
-    INT 21h
-
-    SUB AL, 49
-    MOV filaMov, AL
-
-    MOV Ah, 09h
-    LEA DX, salto
-    INT 21h
-
-    MOV Ah, 09h
-    LEA DX, pedirColumna
-    INT 21h
-
-    MOV AH, 1
-    INT 21h
-
-    SUB AL, 49
-    MOV colMov, AL
-ENDM
-
-
-.MODEL small
-
-.STACK 100h
-
-.DATA
-    gameBoard db 9 DUP(0)  ; Tablero de 3x3, inicializado a 0
-    posicionesColumna db 35, 145, 220
-    posicionesFila db 15, 80, 150
-
-    filaMov db 0
-    colMov db 0
-
-    salto db 10, 13, "$"
-    pedirFila db "Ingrese La Fila: ", "$"
-    pedirColumna db "Ingrese La Columna: ", "$"
-    turno db 0
-
-.CODE
-    MOV AX, @data
-    MOV DS, AX
-
-    Main PROC
-        ; TODO: TERMINAR EJEMPLO
-        Tablero:
-            PedirMovimiento
-
-            MOV AL, 13h
-            MOV AH, 00h
-            INT 10h
-
-            TableroTotito
-
-            CMP turno, 0
-            JE PintarSpriteX
-
-            CMP turno, 1
-            JE PintarSpriteO
-
-            PintarSpriteX:
-                SpriteX
-                MOV AL, turno
-                INC AL
-                MOV turno, AL
-                JMP ContinuarModoVideo
-
-            PintarSpriteO:
-                SpriteO
-                MOV AL, turno
-                DEC AL
-                MOV turno, AL
-
-            ContinuarModoVideo:
-                MOV AH, 10h
-                INT 16h
-
-                MOV AL, 03h
-                MOV AH, 00h
-                INT 10h
-
-            JMP Tablero
-
-        Salir:
-            MOV AX, 4C00H
-            INT 21h 
-    Main ENDP
-END
