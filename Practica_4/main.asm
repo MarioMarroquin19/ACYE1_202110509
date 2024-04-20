@@ -1074,7 +1074,7 @@ ComprobarGanadorIA MACRO
         MOV BL, 0
         MOV BH, 0
         MOV SI, 3
-        JMP ComprobarFila2
+        JMP auxFila2
 
     ComprobarFila1:
         MOV AL, tableroIA[SI]
@@ -1092,6 +1092,9 @@ ComprobarGanadorIA MACRO
         JE GanadorFilaX
         JMP ContarColumnas
     
+    auxFila2:
+        JMP auxFila3
+
     contarO:
         INC BH
         CMP BH, 3
@@ -1104,6 +1107,9 @@ ComprobarGanadorIA MACRO
         ImprimirCadenaPersonalizada PerderO , 0, 0Ah, 21, 10, 3
         CapturarOpcion opcion
         JMP SalirGanador
+    
+    auxFila3:
+        JMP ComprobarFila2
     
     GanadorFilaO:
         ImprimirCadenaPersonalizada GanadorO , 0, 0Ah, 19, 10, 1
@@ -1120,7 +1126,13 @@ ComprobarGanadorIA MACRO
         MOV BL, 0
         MOV BH, 0
         MOV SI, 6
-        JMP ComprobarFila3
+        JMP auxFila31
+    
+    auxGanadorFilaX:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO:
+        JMP GanadorFilaO
     
     ComprobarFila2:
         MOV AL, tableroIA[SI]
@@ -1135,13 +1147,16 @@ ComprobarGanadorIA MACRO
     contarX1:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX
         JMP ContarColumnas1
+    
+    auxFila31:
+        JMP ComprobarFila3
     
     contarO1:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO
         JMP ContarColumnas1
 
     ContarColumnas2:
@@ -1190,6 +1205,12 @@ ComprobarGanadorIA MACRO
         MOV BH, 0
         MOV SI, 0
         JMP ContarColumnas3
+    
+    auxGanadorFilaX1:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO1:
+        JMP GanadorFilaO
 
     ContarColumnas3:
         CMP SI, 7
@@ -1209,14 +1230,21 @@ ComprobarGanadorIA MACRO
     contarX3:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX1
         JMP ContarColumnas3
     
     contarO3:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO1
         JMP ContarColumnas3
+
+    
+    auxGanadorFilaX2:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO2:
+        JMP GanadorFilaO
 
 
     ComprobarColumna21:
@@ -1243,13 +1271,13 @@ ComprobarGanadorIA MACRO
     contarX4:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX2
         JMP ContarColumnas4
     
     contarO4:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO2
         JMP ContarColumnas4
 
 
@@ -1263,6 +1291,12 @@ ComprobarGanadorIA MACRO
         MOV BH, 0
         MOV SI, 2
         JMP ComprobarColumna3
+    
+    auxGanadorFilaX3:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO3:
+        JMP GanadorFilaO
 
     ComprobarColumna3:
         MOV AL, tableroIA[SI]
@@ -1277,16 +1311,14 @@ ComprobarGanadorIA MACRO
     contarX5:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX3
         JMP ContarColumnas5
     
     contarO5:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO3
         JMP ContarColumnas5
-
-
 
         ;Diagonales ahora
     Reiniciar1:
@@ -1304,6 +1336,12 @@ ComprobarGanadorIA MACRO
         MOV BH, 0
         MOV SI, 0
         JMP ContarDiagonales
+    
+    auxGanadorFilaX4:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO4:
+        JMP GanadorFilaO
     
     ContarDiagonales:
         CMP SI, 9
@@ -1323,17 +1361,16 @@ ComprobarGanadorIA MACRO
     contarX6:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX4
         JMP ContarDiagonales
     
     contarO6:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO4
         JMP ContarDiagonales
     
 
-    
     ComprobarDiagonalDer1:
         MOV BL, 0
         MOV BH, 0
@@ -1344,6 +1381,13 @@ ComprobarGanadorIA MACRO
         CMP SI, 7
         JB ComprobarDiagonalDer
         JE ConsiderarEmpate
+
+    auxGanadorFilaX5:
+        JMP GanadorFilaX
+    
+    auxGanadorFilaO5:
+        JMP GanadorFilaO
+
 
     ComprobarDiagonalDer:
         MOV AL, tableroIA[SI]
@@ -1358,13 +1402,13 @@ ComprobarGanadorIA MACRO
     contarX7:
         INC BL
         CMP BL, 3
-        JE GanadorFilaX
+        JE auxGanadorFilaX5
         JMP ContarDiagonales1
     
     contarO7:
         INC BH
         CMP BH, 3
-        JE GanadorFilaO
+        JE auxGanadorFilaO5
         JMP ContarDiagonales1
     
     ConsiderarEmpate:
@@ -1503,6 +1547,9 @@ ENDM
 
                 CMP opcion, 50; (2) 1 vs 1
                     JE auxJuegoVsJugador
+            
+            auxNuevoJuego:
+                JMP NuevoJuego
 
                 CMP opcion, 51; (3) Reportes
                     JE auxReportesJuego
@@ -1524,20 +1571,22 @@ ENDM
                 ImprimirCadenaPersonalizada textoSalida, 0, 0Ah, 38, 0, 3
                 CapturarOpcion opcion
                 CMP opcion, 27
-                JE NuevoJuego ;arreglar salto fuera de rango 
+                JE auxNuevoJuego ;arreglar salto fuera de rango 
                 BorrarPantalla
-                IA:
-                    PedirMovs 
-                    BorrarPantalla
-                    ComprobarCasillaIA
-                    BorrarPantalla
-                    JugadorVsIaMacro  
-                    BorrarPantalla
-                    ComprobarGanadorIA       
-                JMP IA
+                PedirMovs 
+                BorrarPantalla
+                ComprobarCasillaIA
+                BorrarPantalla
+                JugadorVsIaMacro  
+                BorrarPantalla
+                ComprobarGanadorIA       ;saltos fuera de rango
+                JMP JuegoVsIA
             
             auxMenu:
                 JMP Menu
+
+            auxNuevoJuego1:
+                JMP auxNuevoJuego
 
             JuegoVsJugador:
                 BorrarPantalla
@@ -1546,7 +1595,7 @@ ENDM
                 ImprimirCadenaPersonalizada textoSalida, 0, 0Ah, 38, 0, 3
                 CapturarOpcion opcion
                 CMP opcion, 27
-                JE NuevoJuego 
+                JE auxNuevoJuego1 
                 BorrarPantalla
                 PedirMovs
                 BorrarPantalla
@@ -1554,11 +1603,11 @@ ENDM
                 BorrarPantalla
                 JuegoVsJugadorMacro
                 BorrarPantalla
-                ComprobarGanador 
+                ComprobarGanador ;saltos fuera de rango xd
                 JMP JuegoVsJugador
 
             ReportesJuego:
-                JE auxMenu
+                JE auxMenu ;saltos fuera de rango xd
 
             Animacion3:
                 JMP Animacion
