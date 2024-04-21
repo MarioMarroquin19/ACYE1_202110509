@@ -71,7 +71,18 @@
 
 - **Animación**
 
-    Al seleccionar esta opción del menú, se podrá cargar un archivo de entrada y se hará una animación de un ascii art de manera gradual. Se podrán visualizar ocho animaciones, aclarando también que solo se pueden cargar entre 1 y 8 imágenes en el archivo de entrada. Para detener las animaciones y volver al menú, es suficiente con presionar la barra espaciadora.
+    Al seleccionar esta opción del menú, se podrá cargar un archivo de entrada y se hará una animación de un ascii art de manera gradual. 
+    
+    <p align = "center">
+        <img src = "imgs/entrada.png" width="500px">
+    </p>
+
+    
+    Se podrán visualizar ocho animaciones, aclarando también que solo se pueden cargar entre 1 y 8 imágenes en el archivo de entrada. Para detener las animaciones y volver al menú, es suficiente con presionar la barra espaciadora.
+
+    <p align = "center">
+        <img src = "imgs/animacion.png" width="500px">
+    </p>
 
 - **Informacion**
 
