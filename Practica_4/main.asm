@@ -2192,11 +2192,11 @@ ENDM
 
 Animacion8 MACRO charsPerRow, cantRows, bufferImagen
     LOCAL Ciclo, PrintArt, TerminarCiclo, addOffset
-    MOV CX, 25
-    ; SUB CX, cantRows
+    MOV CX, 45
+    SUB CX, cantRows
 
-    MOV fila, 30                  ; Iniciar en la primera fila
-    MOV filaActual, 30
+    MOV fila, 24                  ; Iniciar en la primera fila
+    MOV filaActual, 0
     MOV columna, 99               ; Iniciar en la última columna de una pantalla de 80 caracteres
 
     Ciclo:
@@ -2204,8 +2204,8 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
         MOV saltoCadena, OFFSET bufferImagen
         
         MOV CX, cantRows
-        DEC CX
-        MOV AX, 0
+        dec CX
+        MOV AX, charsPerRow
 
         addOffset:
             ADD saltoCadena, AX
@@ -2219,7 +2219,7 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
             DEC filaActual            ; Incrementar la fila para ir hacia abajo
 
             MOV AX, charsPerRow
-            ADD saltoCadena, AX
+            SUB saltoCadena, AX
 
             POP CX
             LOOP PrintArt
@@ -2233,8 +2233,8 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
 
         DEC columna                ; Decrementar la columna para ir hacia la izquierda
         
+        DEC fila
         MOV AL, fila
-        dec fila
         MOV filaActual, AL
 
         CMP CX, 0
@@ -2243,6 +2243,7 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
         JMP Ciclo
 
     TerminarCiclo:
+
 ENDM
 
 obtenerCaracter MACRO
