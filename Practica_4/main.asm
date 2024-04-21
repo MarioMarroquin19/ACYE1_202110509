@@ -2067,7 +2067,7 @@ Animacion5 MACRO charsPerRow, cantRows, bufferImagen
         MOV CX, cantRows
         PrintArt:
             PUSH CX
-            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 6
+            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 11
             DEC filaActual
 
             MOV AX, charsPerRow
@@ -2111,7 +2111,7 @@ Animacion6 MACRO charsPerRow, cantRows, bufferImagen
         MOV CX, cantRows
         PrintArt:
             PUSH CX
-            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 5
+            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 12
             INC filaActual
             MOV AX, charsPerRow
             ADD saltoCadena, AX
@@ -2160,7 +2160,7 @@ Animacion7 MACRO charsPerRow, cantRows, bufferImagen
         MOV CX, cantRows
         PrintArt:
             PUSH CX
-            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 6
+            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 13
             INC filaActual            ; Incrementar la fila para ir hacia abajo
 
             MOV AX, charsPerRow
@@ -2215,7 +2215,7 @@ Animacion8 MACRO charsPerRow, cantRows, bufferImagen
         MOV CX, cantRows
         PrintArt:
             PUSH CX
-            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 6
+            PrintCadena filaActual, columna, paginaActual, charsPerRow, saltoCadena, 9
             DEC filaActual            ; Incrementar la fila para ir hacia abajo
 
             MOV AX, charsPerRow
