@@ -2320,6 +2320,26 @@ ENDM
     textoNombreJugador2 db "Ingrese nickname2 (5 letras): ", "$"
     nombreJugador1 db 5 dup(' '),'$'
     nombreJugador2 db 5 dup(' '),'$'
+
+
+        ; menu
+    messageMenu   db "    +===============================+","$"
+    messageMenu1  db "    ||      MENU PRINCIPAL         ||","$"
+    messageMenu2  db "    +===============================+","$"
+    messageMenu3  db "    || 1. Nuevo Juego              ||","$"
+    messageMenu4  db "    ||                             ||","$"
+    messageMenu5  db "    || 2. Animacion                ||","$"
+    messageMenu6  db "    ||                             ||","$"
+    messageMenu7  db "    || 3. Informacion              ||","$"
+    messageMenu8  db "    ||                             ||","$"
+    messageMenu9  db "    || 4. Salir                    ||","$"
+    messageMenu10 db "    ||                             ||","$"
+    messageMenu11 db "    +===============================+","$"
+    messageMenu12 db "    Seleccione una opcion:           ","$"
+    messageMenu13 db "    >>", "$"
+    op db 1 dup("$")
+
+
     ;AQUÍ LAS ANIMACIONES
 
     handler             dw ?
@@ -2384,14 +2404,20 @@ ENDM
 
         Menu:
             BorrarPantalla
-            MostrarTextoColor textoAdorno, 0Bh, 29
-            MostrarTexto ln
-            MostrarTextoColor textoInicio, 0Bh, 29
-            MostrarTexto ln
-            MostrarTextoColor textoAdorno, 0Bh, 29
-            MostrarTexto ln
-            MostrarTexto ln
-            ImprimirCadenaPersonalizada textoOpciones 0, 0Eh, 94, 0, 4
+            ImprimirCadenaPersonalizada messageMenu, 0, 0Ch, 37, 0, 1
+            ImprimirCadenaPersonalizada messageMenu1, 0, 0Ch, 37, 0, 2
+            ImprimirCadenaPersonalizada messageMenu2, 0, 0Ch, 37, 0, 3
+            ImprimirCadenaPersonalizada messageMenu3, 0, 0Ch, 37, 0, 4
+            ImprimirCadenaPersonalizada messageMenu4, 0, 0Ch, 37, 0, 5
+            ImprimirCadenaPersonalizada messageMenu5, 0, 0Ch, 37, 0, 6
+            ImprimirCadenaPersonalizada messageMenu6, 0, 0Ch, 37, 0, 7
+            ImprimirCadenaPersonalizada messageMenu7, 0, 0Ch, 37, 0, 8
+            ImprimirCadenaPersonalizada messageMenu8, 0, 0Ch, 37, 0, 9
+            ImprimirCadenaPersonalizada messageMenu9, 0, 0Ch, 37, 0, 10
+            ImprimirCadenaPersonalizada messageMenu10, 0, 0Ch, 37, 0, 11
+            ImprimirCadenaPersonalizada messageMenu11, 0, 0Ch, 37, 0, 12
+            ImprimirCadenaPersonalizada messageMenu12, 0, 0Ch, 37, 0, 13
+            ImprimirCadenaPersonalizada messageMenu13, 0, 0Ch, 6, 0, 14
             CapturarOpcion opcion
 
             CMP opcion, 49
