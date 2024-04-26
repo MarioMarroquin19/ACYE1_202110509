@@ -675,7 +675,114 @@ PrintTablaFrecuencias MACRO
     ExitPrintTabla:
 ENDM
 
-; * CODIGO DE EJEMPLO PARA LA LECTURA DE UN CSV
+obtenerCaracter MACRO
+    MOV AH, 01h
+    INT 21h
+ENDM
+
+ImprimirCadenaPersonalizada MACRO cadena, pagina, color, caracteres, columna, fila
+    MOV AH, 13h         ; Interrupcion
+    MOV AL, 1           ; 00000011 -> MOV AL, 2 Modo Escritura
+    MOV BH, pagina      ; Pagina a Utilizar
+    MOV BL, color       ; Color de la Letra
+    MOV CX, caracteres  ; Cantidad De Caracteres 
+    MOV DL, columna     ; Columna 
+    MOV DH, fila        ; Fila 
+    LEA BP, cadena      ; Offset de la segunda cadena 2 en B
+    INT 10h
+ENDM
+
+CapturarComando MACRO buffer
+    LOCAL obtenerChar, endTexto
+    XOR SI, SI
+
+    obtenerChar:
+        obtenerCaracter
+        CMP AL, 0DH
+        JE endTexto
+        MOV buffer[SI], AL
+        INC SI
+        JMP obtenerChar
+
+    endTexto:
+ENDM
+
+CambiarModoVideo MACRO
+    MOV AL, 13h
+    MOV AH, 00h
+    INT 10h    
+ENDM
+
+CambiarModoTexto MACRO
+    MOV AL, 03h
+    MOV AH, 00h
+    INT 10h
+ENDM
+
+BorrarPantalla MACRO
+    MOV AX, 03h
+    INT 10h
+ENDM
+
+Salir MACRO
+    MOV AH, 4Ch
+    INT 21h
+ENDM
+
+Mensaje MACRO
+    BorrarPantalla
+    CambiarModoTexto
+    ImprimirCadenaPersonalizada wolfram1, 0, 0Ch, 55, 04, 1
+    ImprimirCadenaPersonalizada wolfram2, 0, 0Ch, 55, 04, 2
+    ImprimirCadenaPersonalizada wolfram3, 0, 0Ch, 55, 04, 3
+    ImprimirCadenaPersonalizada wolfram4, 0, 0Ch, 55, 04, 4
+    ImprimirCadenaPersonalizada wolfram5, 0, 0Ch, 55, 04, 5
+    ImprimirCadenaPersonalizada wolfram6, 0, 0Ch, 55, 04, 6
+    ImprimirCadenaPersonalizada wolfram7, 0, 0Ch, 55, 04, 7
+
+    ImprimirCadenaPersonalizada PedirComando, 0, 15, 33, 04, 10
+ENDM
+
+CapturarOpcion MACRO regSeleccion
+    MOV AH, 01h
+    INT 21h
+    MOV regSeleccion, AL
+ENDM
+
+InfoEstudiante MACRO
+    BorrarPantalla
+    ImprimirCadenaPersonalizada textoInfo, 0, 0Ah, 142, 0, 5
+    ImprimirCadenaPersonalizada textoInfo1, 0, 09h, 77, 0, 8
+    PrintCadena ln
+    PrintCadena ln
+    PrintCadena textoRegresar
+    CapturarOpcion enter
+ENDM
+
+CompararCadenas MACRO buffer, cadena, etiqueta
+    LOCAL comparar, noEsCadena
+
+    lea si, buffer
+    lea di, cadena
+    cld ; Limpiar la dirección
+
+    comparar:
+        lodsb ; Cargar byte en AL y aumentar SI
+        cmp al, [di] ; Comparar con byte en DI
+        jne noEsCadena ; Saltar si no son iguales
+        inc di ; Aumentar DI
+        cmp al, 0 ; Comprobar si hemos llegado al final de la cadena
+        jne comparar ; Si no, seguir comparando
+
+    ; Si llegamos aquí, la cadena es igual a 'cadena'
+    jmp etiqueta ; Saltar a la etiqueta especificada
+
+    noEsCadena:
+    ; Si llegamos aquí, la cadena no es igual a 'cadena'
+    ; ...
+ENDM
+
+
 .MODEL small
 .STACK 100h
 .DATA
@@ -696,14 +803,22 @@ ENDM
     msgMinimo           db "El Valor Minimo De Los Datos Es: ", "$"
     msgMediana          db "El Valor De la Mediana De Los Datos Es: ", "$"
     msgContadorDatos    db "El Total De Datos Utilizados Ha Sido De: ", "$"
+    PedirComando        db ">>Ingrese El Comando A Realizar: ", "$"
+    comandoIngreso      db 30 dup(?), 0
+    enter               db 1 dup(32);
 
     wolfram1 db "#     # ####### #       ####### ######     #    #     #",10,13,"$"
-    wolfram2 db "#  #  # #     # #       #       #     #   # #   ##   ## ",10,13,"$"
-    wolfram3 db "#  #  # #     # #       #       #     #  #   #  # # # # ",10,13,"$"
-    wolfram4 db "#  #  # #     # #       #####   ######  #     # #  #  # ",10,13,"$"
-    wolfram5 db "#  #  # #     # #       #       #   #   ####### #     # ",10,13,"$"
-    wolfram6 db "#  #  # #     # #       #       #    #  #     # #     # ",10,13,"$"
-    wolfram7 db " ## ##  ####### ####### #       #     # #     # #     # ",10,13,"$"
+    wolfram2 db "#  #  # #     # #       #       #     #   # #   ##   ##",10,13,"$"
+    wolfram3 db "#  #  # #     # #       #       #     #  #   #  # # # #",10,13,"$"
+    wolfram4 db "#  #  # #     # #       #####   ######  #     # #  #  #",10,13,"$"
+    wolfram5 db "#  #  # #     # #       #       #   #   ####### #     #",10,13,"$"
+    wolfram6 db "#  #  # #     # #       #       #    #  #     # #     #",10,13,"$"
+    wolfram7 db " ## ##  ####### ####### #       #     # #     # #     #",10,13,"$"
+
+    textoInfo db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", "$"
+    textoInfo1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10,13,"$"
+    textoRegresar db "Presione una tecla para regresar al menu: ", "$"
+    ln db 10, 13, "$"
 
     msgModa1            db "La Moda De Los Datos Es: ", "$"
     msgModa2            db "Con Una Frecuencia De: ", "$"
@@ -722,64 +837,99 @@ ENDM
     entero              dw ?
     decimal             dw ?
     cantDecimal         db 0
+
+    ;comandos
+    comando1           db "prom", 0
+    comando2           db "mediana", 0
+    comando3           db "moda", 0
+    comando4           db "max", 0
+    comando5           db "min", 0
+    comando6           db "contador", 0
+    comando7           db "graf_barra_asc", 0
+    comando8           db "graf_barra_desc", 0
+    comando9           db "graf_linea", 0
+    comando10          db "abrir_", 0
+    comando11          db "limpiar", 0
+    comando12          db "reporte", 0
+    comando13          db "info", 0
+    comando14          db "salir", 0
+
+
+
 .CODE
     MOV AX, @data
     MOV DS, AX
+    MOV ES, AX
+
+    MOV AX, 03h ; Definimos el modo video AH = 0h | AL = 03h
+    INT 10h
 
     Main PROC
-        PrintCadena wolfram1
-        PrintCadena wolfram2
-        PrintCadena wolfram3
-        PrintCadena wolfram4
-        PrintCadena wolfram5
-        PrintCadena wolfram6
-        PrintCadena wolfram7
-        
-        PrintCadena msgToRequestFile
-        PedirCadena filename
+        BorrarPantalla
 
-        ; * Extraer Informacion Del CSV
-        OpenFile
-        GetSizeFile handlerFile
-        ReadCSV handlerFile, numCSV
-        CloseFile handlerFile
+        Inicio:
+            Mensaje
+            CapturarComando comandoIngreso
 
-        ; * Ordenar Datos - Ordenamiento Burbuja
-        OrderData
+            CompararCadenas comandoIngreso, comando1, promedioEtq
+            CompararCadenas comandoIngreso, comando2, medianaEtq
+            CompararCadenas comandoIngreso, comando3, modaEtq
+            CompararCadenas comandoIngreso, comando4, maximoEtq
+            CompararCadenas comandoIngreso, comando5, minimoEtq
+            CompararCadenas comandoIngreso, comando6, contadorEtq
+            CompararCadenas comandoIngreso, comando7, grafBarraAscEtq
+            CompararCadenas comandoIngreso, comando8, grafBarraDescEtq
+            CompararCadenas comandoIngreso, comando9, grafLineaEtq
+            CompararCadenas comandoIngreso, comando10, abrirEtq
+            CompararCadenas comandoIngreso, comando11, limpiarEtq
+            CompararCadenas comandoIngreso, comando12, reporteEtq
+            CompararCadenas comandoIngreso, comando13, infoEtq
+            CompararCadenas comandoIngreso, comando14, SalirEtq
 
-        ; * Promedio
-        Promedio
-        MOV base, 10000
+            promedioEtq:
+                JMP Inicio
+            
+            medianaEtq:
+                JMP Inicio
 
-        ; * Maximo
-        Maximo
-        MOV base, 10000
+            modaEtq:
+                JMP Inicio
+            
+            maximoEtq:
+                JMP Inicio
+            
+            minimoEtq:
+                JMP Inicio
+            
+            contadorEtq:
+                JMP Inicio
+            
+            grafBarraAscEtq:
+                JMP Inicio
 
-        ; * Minimo
-        Minimo
-        MOV base, 10000
+            grafBarraDescEtq:
+                JMP Inicio
 
-        ; * Mediana
-        Mediana
-        MOV base, 10000
+            grafLineaEtq:
+                JMP Inicio
 
-        ; * Contador De Datos
-        ContadorDatos
-        MOV base, 10000
+            abrirEtq:
+                JMP Inicio
 
-        ; * Construir Tabla De Frecuencias
-        BuildTablaFrecuencias
-        OrderFrecuencies
-        MOV base, 10000
+            limpiarEtq:
+                BorrarPantalla
+                JMP Inicio
+            
+            reporteEtq:
+                JMP Inicio
 
-        ; * Moda
-        Moda
-        MOV base, 10000
+            infoEtq:
+                InfoEstudiante
+                CapturarOpcion enter
+                JMP Inicio
 
-        ; * Print Tabla Frecuencias
-        PrintTablaFrecuencias
-        
-        MOV AX, 4C00h
-        INT 21h
+            SalirEtq:
+                Salir
+
     Main ENDP
 END
