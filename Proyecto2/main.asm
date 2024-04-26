@@ -848,7 +848,7 @@ ENDM
     comando7           db "graf_barra_asc", 0
     comando8           db "graf_barra_desc", 0
     comando9           db "graf_linea", 0
-    comando10          db "abrir_", 0
+    comando10          db "abrir", 0
     comando11          db "limpiar", 0
     comando12          db "reporte", 0
     comando13          db "info", 0
@@ -887,33 +887,70 @@ ENDM
             CompararCadenas comandoIngreso, comando14, SalirEtq
 
             promedioEtq:
+                BorrarPantalla
+                Promedio
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
             
             medianaEtq:
+                BorrarPantalla
+                Mediana
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
 
             modaEtq:
+                BorrarPantalla
+                Moda
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
             
             maximoEtq:
+                BorrarPantalla
+                Maximo
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
             
             minimoEtq:
+                BorrarPantalla
+                Minimo
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
             
             contadorEtq:
+                BorrarPantalla
+                ContadorDatos
+                MOV base, 10000
+                CapturarOpcion enter
                 JMP Inicio
             
             grafBarraAscEtq:
+                BorrarPantalla
                 JMP Inicio
 
             grafBarraDescEtq:
+                BorrarPantalla
                 JMP Inicio
 
             grafLineaEtq:
+                BorrarPantalla
                 JMP Inicio
 
             abrirEtq:
+                BorrarPantalla
+                PrintCadena msgToRequestFile
+                PedirCadena filename
+                ;info archivo de entrada
+                OpenFile
+                GetSizeFile handlerFile
+                ReadCSV handlerFile, numCSV
+                CloseFile handlerFile
+                OrderData
+                CapturarOpcion enter
                 JMP Inicio
 
             limpiarEtq:
@@ -921,6 +958,7 @@ ENDM
                 JMP Inicio
             
             reporteEtq:
+                BorrarPantalla
                 JMP Inicio
 
             infoEtq:
