@@ -759,28 +759,42 @@ InfoEstudiante MACRO
     CapturarOpcion enter
 ENDM
 
-CompararCadenas MACRO buffer, cadena, etiqueta
-    LOCAL comparar, noEsCadena
+CompararCadenas MACRO comandoIngreso, comando, etiqueta
+    Local SiguienteCaracter, NoCoincide
+    LEA SI, comandoIngreso ; Carga la dirección de la cadena ingresada
+    LEA DI, comando ; Carga la dirección del comando a comparar
+    CLD ; Limpia la dirección
 
-    lea si, buffer
-    lea di, cadena
-    cld ; Limpiar la dirección
+    ; Comienza a comparar las cadenas
+    SiguienteCaracter:
+        LODSB ; Carga el siguiente byte de la cadena ingresada
+        SCASB ; Compara con el siguiente byte del comando
+        JNE NoCoincide ; Si no coinciden, salta a NoCoincide
+        OR AL, AL ; Comprueba si se ha llegado al final de la cadena
+        JNE SiguienteCaracter ; Si no es el final, sigue comparando
 
-    comparar:
-        lodsb ; Cargar byte en AL y aumentar SI
-        cmp al, [di] ; Comparar con byte en DI
-        jne noEsCadena ; Saltar si no son iguales
-        inc di ; Aumentar DI
-        cmp al, 0 ; Comprobar si hemos llegado al final de la cadena
-        jne comparar ; Si no, seguir comparando
+    ; Si las cadenas coinciden, salta a la etiqueta correspondiente
+    JMP etiqueta
 
-    ; Si llegamos aquí, la cadena es igual a 'cadena'
-    jmp etiqueta ; Saltar a la etiqueta especificada
-
-    noEsCadena:
-    ; Si llegamos aquí, la cadena no es igual a 'cadena'
-    ; ...
+    NoCoincide:
 ENDM
+
+PedirComandoMacro MACRO buffer
+    LEA DX, buffer
+    MOV AH, 0Ah
+    INT 21h
+
+    XOR BX, BX
+    MOV SI, 2
+    MOV BL, comandoIngreso[1]
+    ADD SI, BX
+    MOV comandoIngreso[SI], 0
+
+    BorrarPantalla
+    PrintCadena comandoIngreso
+    CapturarOpcion enter
+ENDM
+
 
 
 .MODEL small
@@ -804,7 +818,7 @@ ENDM
     msgMediana          db "El Valor De la Mediana De Los Datos Es: ", "$"
     msgContadorDatos    db "El Total De Datos Utilizados Ha Sido De: ", "$"
     PedirComando        db ">>Ingrese El Comando A Realizar: ", "$"
-    comandoIngreso      db 30 dup(?), 0
+    comandoIngreso      db 30 dup(32)
     enter               db 1 dup(32);
 
     wolfram1 db "#     # ####### #       ####### ######     #    #     #",10,13,"$"
@@ -819,7 +833,7 @@ ENDM
     textoInfo1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10,13,"$"
     textoRegresar db "Presione una tecla para regresar al menu: ", "$"
     ln db 10, 13, "$"
-
+    TxtNoReconocido db "Comando No Reconocido", "$"
     msgModa1            db "La Moda De Los Datos Es: ", "$"
     msgModa2            db "Con Una Frecuencia De: ", "$"
     msgEncabezadoTabla  db "-> Valor    -> Frecuencia", "$"
@@ -869,7 +883,7 @@ ENDM
 
         Inicio:
             Mensaje
-            CapturarComando comandoIngreso
+            PedirComandoMacro comandoIngreso
 
             CompararCadenas comandoIngreso, comando1, promedioEtq
             CompararCadenas comandoIngreso, comando2, medianaEtq
@@ -884,7 +898,8 @@ ENDM
             CompararCadenas comandoIngreso, comando11, limpiarEtq
             CompararCadenas comandoIngreso, comando12, reporteEtq
             CompararCadenas comandoIngreso, comando13, infoEtq
-            CompararCadenas comandoIngreso, comando14, SalirEtq
+
+            JMP NoReconodido
 
             promedioEtq:
                 BorrarPantalla
@@ -963,11 +978,17 @@ ENDM
 
             infoEtq:
                 InfoEstudiante
-                CapturarOpcion enter
                 JMP Inicio
 
             SalirEtq:
                 Salir
+            
+            NoReconodido:
+                BorrarPantalla
+                ImprimirCadenaPersonalizada TxtNoReconocido, 0, 0Ch, 21, 04, 12
+                CapturarOpcion enter
+                JMP Inicio
+
 
     Main ENDP
 END
