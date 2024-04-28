@@ -760,41 +760,53 @@ InfoEstudiante MACRO
 ENDM
 
 CompararCadenas MACRO comandoIngreso, comando, etiqueta
-    Local SiguienteCaracter, NoCoincide
-    LEA SI, comandoIngreso ; Carga la dirección de la cadena ingresada
-    LEA DI, comando ; Carga la dirección del comando a comparar
-    CLD ; Limpia la dirección
+    LOCAL compare_loop, end_compare
 
-    ; Comienza a comparar las cadenas
-    SiguienteCaracter:
-        LODSB ; Carga el siguiente byte de la cadena ingresada
-        SCASB ; Compara con el siguiente byte del comando
-        JNE NoCoincide ; Si no coinciden, salta a NoCoincide
-        OR AL, AL ; Comprueba si se ha llegado al final de la cadena
-        JNE SiguienteCaracter ; Si no es el final, sigue comparando
+    LEA SI, comandoIngreso
+    LEA DI, comando
 
-    ; Si las cadenas coinciden, salta a la etiqueta correspondiente
+    compare_loop:
+        MOV AL, [SI]
+        MOV BL, [DI]
+        CMP AL, BL
+        JNE end_compare
+        INC SI
+        INC DI
+        CMP AL, 0
+        JNE compare_loop
+
     JMP etiqueta
 
-    NoCoincide:
+    end_compare:
+
 ENDM
 
 PedirComandoMacro MACRO buffer
-    LEA DX, buffer
-    MOV AH, 0Ah
-    INT 21h
+    LOCAL    obtenerChar, endTexto
+    XOR      SI, SI                   ; XOR SI, SI ; Inicializa SI a 0
 
-    XOR BX, BX
-    MOV SI, 2
-    MOV BL, comandoIngreso[1]
-    ADD SI, BX
-    MOV comandoIngreso[SI], 0
-
-    BorrarPantalla
-    PrintCadena comandoIngreso
-    CapturarOpcion enter
+    obtenerChar: 
+        obtenerCaracter
+        CMP             AL, 0DH                  ; Compara si el caracter es un Enter
+        JE              endTexto                 ; Si es un Enter, termina la captura de texto
+        MOV             buffer[SI], AL           ; Guarda el caracter en el buffer
+        INC             SI                       ; Incrementa SI para apuntar al siguiente espacio en el buffer
+        JMP             obtenerChar              ; Salta a 'obtenerChar' para seguir capturando texto
+    
+    endTexto:  
 ENDM
 
+LimpiarBufferMacro MACRO buffer, tamanio
+    LOCAL limpiar_loop
+
+    XOR     SI, SI                  ; Inicializa SI a 0
+
+    limpiar_loop:
+        MOV     BYTE PTR buffer[SI], 0    ; Limpia cada byte del buffer
+        INC     SI                         ; Incrementa SI
+        CMP     SI, tamanio                 ; Compara SI con el tamaño del buffer
+        JL      limpiar_loop               ; Continúa si SI es menor que el tamaño
+ENDM
 
 
 .MODEL small
@@ -818,7 +830,7 @@ ENDM
     msgMediana          db "El Valor De la Mediana De Los Datos Es: ", "$"
     msgContadorDatos    db "El Total De Datos Utilizados Ha Sido De: ", "$"
     PedirComando        db ">>Ingrese El Comando A Realizar: ", "$"
-    comandoIngreso      db 30 dup(32)
+    comandoIngreso      db 20 dup(?),0
     enter               db 1 dup(32);
 
     wolfram1 db "#     # ####### #       ####### ######     #    #     #",10,13,"$"
@@ -880,26 +892,15 @@ ENDM
 
     Main PROC
         BorrarPantalla
+        
 
-        Inicio:
+        Inicio:  
             Mensaje
+            LimpiarBufferMacro comandoIngreso, 20
             PedirComandoMacro comandoIngreso
 
             CompararCadenas comandoIngreso, comando1, promedioEtq
-            CompararCadenas comandoIngreso, comando2, medianaEtq
-            CompararCadenas comandoIngreso, comando3, modaEtq
-            CompararCadenas comandoIngreso, comando4, maximoEtq
-            CompararCadenas comandoIngreso, comando5, minimoEtq
-            CompararCadenas comandoIngreso, comando6, contadorEtq
-            CompararCadenas comandoIngreso, comando7, grafBarraAscEtq
-            CompararCadenas comandoIngreso, comando8, grafBarraDescEtq
-            CompararCadenas comandoIngreso, comando9, grafLineaEtq
-            CompararCadenas comandoIngreso, comando10, abrirEtq
-            CompararCadenas comandoIngreso, comando11, limpiarEtq
-            CompararCadenas comandoIngreso, comando12, reporteEtq
-            CompararCadenas comandoIngreso, comando13, infoEtq
-
-            JMP NoReconodido
+            JMP noEsPromedio
 
             promedioEtq:
                 BorrarPantalla
@@ -908,19 +909,31 @@ ENDM
                 CapturarOpcion enter
                 JMP Inicio
             
+            noEsPromedio:
+                CompararCadenas comandoIngreso, comando2, medianaEtq
+                JMP noEsMediana
+
             medianaEtq:
                 BorrarPantalla
                 Mediana
                 MOV base, 10000
                 CapturarOpcion enter
                 JMP Inicio
-
+            
+            noEsMediana:
+                CompararCadenas comandoIngreso, comando3, modaEtq
+                JMP noEsModa
+            
             modaEtq:
                 BorrarPantalla
                 Moda
                 MOV base, 10000
                 CapturarOpcion enter
                 JMP Inicio
+            
+            noEsModa:
+                CompararCadenas comandoIngreso, comando4, maximoEtq
+                JMP noEsMaximo
             
             maximoEtq:
                 BorrarPantalla
@@ -929,31 +942,56 @@ ENDM
                 CapturarOpcion enter
                 JMP Inicio
             
+            noEsMaximo:
+                CompararCadenas comandoIngreso, comando5, minimoEtq
+                JMP noEsMinimo
+            
             minimoEtq:
                 BorrarPantalla
                 Minimo
                 MOV base, 10000
                 CapturarOpcion enter
                 JMP Inicio
-            
+
+            noEsMinimo:
+                CompararCadenas comandoIngreso, comando6, contadorEtq
+                JMP noEsContador
+
             contadorEtq:
                 BorrarPantalla
                 ContadorDatos
                 MOV base, 10000
                 CapturarOpcion enter
                 JMP Inicio
+
+            noEsContador:
+                CompararCadenas comandoIngreso, comando7, grafBarraAscEtq
+                JMP noEsGrafBarraAsc
             
             grafBarraAscEtq:
                 BorrarPantalla
                 JMP Inicio
-
+            
+            noEsGrafBarraAsc:
+                CompararCadenas comandoIngreso, comando8, grafBarraDescEtq
+                JMP noEsGrafBarraDesc
+            
             grafBarraDescEtq:
                 BorrarPantalla
                 JMP Inicio
-
+            
+            noEsGrafBarraDesc:
+                CompararCadenas comandoIngreso, comando9, grafLineaEtq
+                JMP noEsGrafLinea
+            
             grafLineaEtq:
                 BorrarPantalla
                 JMP Inicio
+            
+            noEsGrafLinea:
+                CompararCadenas comandoIngreso, comando10, abrirEtq
+                JMP noEsAbrir
+            
 
             abrirEtq:
                 BorrarPantalla
@@ -965,30 +1003,46 @@ ENDM
                 ReadCSV handlerFile, numCSV
                 CloseFile handlerFile
                 OrderData
+                
                 CapturarOpcion enter
                 JMP Inicio
+            
+            noEsAbrir:
+                CompararCadenas comandoIngreso, comando11, limpiarEtq
+                JMP noEsLimpiar
 
             limpiarEtq:
                 BorrarPantalla
                 JMP Inicio
             
+            noEsLimpiar:
+                CompararCadenas comandoIngreso, comando12, reporteEtq
+                JMP noEsReporte
+            
             reporteEtq:
                 BorrarPantalla
                 JMP Inicio
-
+            
+            noEsReporte:
+                CompararCadenas comandoIngreso, comando13, infoEtq
+                JMP noEsInfo
+            
             infoEtq:
                 InfoEstudiante
                 JMP Inicio
-
+            
+            noEsInfo:
+                CompararCadenas comandoIngreso, comando14, salirEtq
+                JMP NoReconodido
+            
             SalirEtq:
                 Salir
-            
+
             NoReconodido:
                 BorrarPantalla
                 ImprimirCadenaPersonalizada TxtNoReconocido, 0, 0Ch, 21, 04, 12
                 CapturarOpcion enter
                 JMP Inicio
-
 
     Main ENDP
 END
