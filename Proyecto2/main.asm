@@ -350,9 +350,9 @@ Maximo MACRO
     INC SI
     MOV cadenaResult[SI], 36
 
-    PrintCadena salto
-    PrintCadena msgMaximo
-    PrintCadena cadenaResult
+    PrintCadena salto; imprime un salto de linea
+    PrintCadena msgMaximo; imprime el mensaje de maximo
+    PrintCadena cadenaResult; imprime el valor maximo
 ENDM
 
 Minimo MACRO
@@ -370,9 +370,9 @@ Minimo MACRO
     INC SI
     MOV cadenaResult[SI], 36
 
-    PrintCadena salto
-    PrintCadena msgMinimo
-    PrintCadena cadenaResult
+    PrintCadena salto ;imprime un salto de linea
+    PrintCadena msgMinimo ;imprime el mensaje de minimo
+    PrintCadena cadenaResult ; imprime el valor minimo
 ENDM
 
 Mediana MACRO
@@ -588,6 +588,8 @@ Moda MACRO
         MOV base, 10000
         CrearCadena entero, cadenaResult
         MOV cadenaResult[SI], 36
+        CrearCadena entero, cadenaResult1
+        MOV cadenaResult1[SI], 36
 
         PrintCadena salto
         PrintCadena msgModa1
@@ -752,7 +754,7 @@ ENDM
 InfoEstudiante MACRO
     BorrarPantalla
     ImprimirCadenaPersonalizada textoInfo, 0, 0Ah, 142, 0, 5
-    ImprimirCadenaPersonalizada textoInfo1, 0, 09h, 77, 0, 8
+    ImprimirCadenaPersonalizada textoInfo1, 0, 09h, 98, 0, 8
     PrintCadena ln
     PrintCadena ln
     PrintCadena textoRegresar
@@ -808,6 +810,136 @@ LimpiarBufferMacro MACRO buffer, tamanio
         JL      limpiar_loop               ; Continúa si SI es menor que el tamaño
 ENDM
 
+;MACROS PARA HACER LOS REPORTES
+
+NuevoArchivo MACRO nombreArchivo, handleArchivo
+    LOCAL errorNuevo, crearArchivo
+
+    MOV AH, 3ch; interrupcion para crear un archivo
+    MOV CX, 00h ; atributos del archivo
+    LEA DX, nombreArchivo ; nombre del archivo
+    INT 21h ; llamada a la interrupcion
+
+    MOV handleArchivo, AX ; guardamos el manejador del archivo
+    RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1 
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE errorNuevo
+    JMP crearArchivo
+
+    errorNuevo: 
+        PrintCadena ln
+        PrintCadena textoErrorArchivo
+        CapturarOpcion enter
+
+    crearArchivo:
+ENDM
+
+EscribirArchi MACRO archivo, handleArchivo
+    LOCAL errorEscribir, escribirArchivo, calcularLongitudEscribir, terminarEscritura
+
+    LEA SI, archivo               ; Carga la dirección del inicio de la cadena en SI
+    MOV CX, 0                     ; Inicializa el contador de longitud en CX
+
+    calcularLongitudEscribir:
+        MOV AL, [SI]              ; Carga el caracter actual en AL desde [SI]
+        CMP AL, '$'               ; Compara si es el final de la cadena
+        JE  terminarEscritura     ; Si es el final, salta a escribir
+        INC SI                    ; Incrementa SI para revisar el siguiente caracter
+        INC CX                    ; Incrementa el contador de longitud
+        JMP calcularLongitudEscribir      ; Continúa con el siguiente caracter
+
+    terminarEscritura:
+    ; Si necesitas incluir CR y LF, suma 2 a CX aquí
+
+    MOV AH, 40h                   ; Servicio de escritura del DOS
+    MOV BX, handleArchivo         ; Manejador del archivo
+    ; CX ya contiene la longitud correcta de la cadena
+    LEA DX, archivo               ; Dirección de la cadena
+    INT 21h    
+
+    RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1 ; si hay un error, refrescar a la etiqueta error
+    CMP BL, 1
+    JE errorEscribir
+    JMP escribirArchivo
+
+    errorEscribir: 
+        PrintCadena ln
+        PrintCadena textoErrorArchivo
+        CapturarOpcion enter
+    
+    escribirArchivo:
+    
+ENDM
+
+CerrarArchi MACRO handleArchivo
+    LOCAL errorCerrar, CerrarArchivo
+
+    MOV AH, 3Eh ; cerrar archivo
+    MOV BX, handleArchivo ; manejador del archivo
+    INT 21h ; llamada a la interrupcion
+
+    RCL BL, 1 ; guardamos el registro de banderas
+    AND BL, 1
+    CMP BL, 1; si hay un error, refrescar a la etiqueta error
+    JE errorCerrar
+    JMP CerrarArchivo
+
+    errorCerrar: 
+        PrintCadena ln
+        PrintCadena textoErrorArchivo
+        CapturarOpcion enter
+
+    CerrarArchivo:
+
+ENDM
+
+ObtenerFecha MACRO
+    ; Obtener la fecha del sistema
+    MOV AH, 2Ah  ; Función del servicio DOS para obtener fecha
+    INT 21h      ; Llama al servicio de interrupción de DOS
+    
+    ; AL = Día de la semana, CX = Año, DH = Mes, DL = Día
+
+    ; Formatear el día
+    XOR AX, AX   ; Limpia AX
+    MOV AL, DL   ; Mueve el día a AL
+    MOV CX, 10
+    DIV CX       ; Divide por 10
+    ADD AH, '0'  ; Convierte la decena a ASCII
+    ADD AL, '0'  ; Convierte la unidad a ASCII
+    MOV fechaCadena[0], AH ; Decena del día
+    MOV fechaCadena[1], AL ; Unidad del día
+
+    ; Formatear el mes
+    XOR AX, AX   ; Limpia AX
+    MOV AL, DH   ; Mueve el mes a AL
+    DIV CX       ; Divide por 10
+    ADD AH, '0'  ; Convierte la decena a ASCII
+    ADD AL, '0'  ; Convierte la unidad a ASCII
+    MOV fechaCadena[3], AH ; Decena del mes
+    MOV fechaCadena[4], AL ; Unidad del mes
+
+    ; Formatear el año
+    MOV AX, CX   ; Año en AX
+    MOV BX, 1000
+    DIV BX       ; Divide por 1000
+    ADD AL, '0'  ; Convierte el millar a ASCII
+    MOV fechaCadena[6], AL ; Millar del año
+    MOV AX, DX   ; Resto del año
+    MOV BX, 100
+    DIV BX       ; Divide por 100
+    ADD AL, '0'  ; Convierte la centena a ASCII
+    MOV fechaCadena[7], AL ; Centena del año
+    MOV AX, DX   ; Resto del año
+    MOV BX, 10
+    DIV BX       ; Divide por 10
+    ADD AH, '0'  ; Convierte la decena a ASCII
+    ADD AL, '0'  ; Convierte la unidad a ASCII
+    MOV fechaCadena[8], AH ; Decena del año
+    MOV fechaCadena[9], AL ; Unidad del año
+ENDM
 
 .MODEL small
 .STACK 100h
@@ -842,17 +974,26 @@ ENDM
     wolfram7 db " ## ##  ####### ####### #       #     # #     # #     #",10,13,"$"
 
     textoInfo db "UNIVERSIDAD DE SAN CARLOS DE GUATEMALA", 10,13, "FACULTAD DE INGENIERIA", 10, 13, "ESCUELA DE CIENCIAS Y SISTEMAS", 10, 13, "ARQUITECTURA DE COMPUTADORES Y ENSAMBLADORES 1", "$"
-    textoInfo1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10,13,"$"
+    textoInfo1 db 10, 13,"SECCION A", 10, 13, "Primer Semestre 2024", 10, 13, "Mario Ernesto Marroquin Perez", 10, 13, "202110509", 10,13,"Proyecto 2 Assembler",10,13,"$"
     textoRegresar db "Presione una tecla para regresar al menu: ", "$"
     ln db 10, 13, "$"
     TxtNoReconocido db "Comando No Reconocido", "$"
+    nombreEstudiante db "Nombre: Mario Ernesto Marroquin Perez","$"
+    carnetEstudiante db "Carnet: 202110509","$"
+
+    fechaCadena db '00', '/', '00', '/', '0000', '$'  ; Cadena para la fecha sin texto
+    txtFecha db 'Fecha: ', '$'
+    formatoHora  db 'Hora: hh:mm:ss', 0Dh,0Ah, '$'
+    
     msgModa1            db "La Moda De Los Datos Es: ", "$"
     msgModa2            db "Con Una Frecuencia De: ", "$"
     msgEncabezadoTabla  db "-> Valor    -> Frecuencia", "$"
+    msgDistrubucion     db "Tabla de Distribucion De Frecuencias", "$"
     salto               db 10, 13, "$"
     espacios            db 32, 32, 32, 32, 32, "$"
     numCSV              db 3 dup(?)
     cadenaResult        db 6 dup("$")
+    cadenaResult1       db 6 dup("$")
     tablaFrecuencias    db 100 dup(?)
     numEntradas         db 1
     indexDatos          dw 0
@@ -863,6 +1004,12 @@ ENDM
     entero              dw ?
     decimal             dw ?
     cantDecimal         db 0
+
+    ;PARA LA CREACION DEL ARCHIVO
+    handleArchivo DW ? ; handleArchivo como una variable de palabra (word) manejador del archivo de 16 bits
+    nombreArchivo db "202110509.txt", 00h ; nombre del archivo, terminar con 00h
+    textoErrorArchivo db "Error con el archivo", '$'
+    textoCreacion db 10, 13, "El Archivo Se Creo Correctamente", "$"
 
     ;comandos
     comando1           db "prom", 0
@@ -893,15 +1040,15 @@ ENDM
     Main PROC
         BorrarPantalla
         
-
         Inicio:  
             Mensaje
             LimpiarBufferMacro comandoIngreso, 20
             PedirComandoMacro comandoIngreso
-
             CompararCadenas comandoIngreso, comando1, promedioEtq
             JMP noEsPromedio
 
+
+            ;PROMEDIO
             promedioEtq:
                 BorrarPantalla
                 Promedio
@@ -913,6 +1060,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando2, medianaEtq
                 JMP noEsMediana
 
+
+            ;MEDIANA
             medianaEtq:
                 BorrarPantalla
                 Mediana
@@ -924,8 +1073,12 @@ ENDM
                 CompararCadenas comandoIngreso, comando3, modaEtq
                 JMP noEsModa
             
+
+            ;MODA
             modaEtq:
                 BorrarPantalla
+                BuildTablaFrecuencias
+                OrderFrecuencies
                 Moda
                 MOV base, 10000
                 CapturarOpcion enter
@@ -935,6 +1088,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando4, maximoEtq
                 JMP noEsMaximo
             
+
+            ;MAXIMO
             maximoEtq:
                 BorrarPantalla
                 Maximo
@@ -946,6 +1101,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando5, minimoEtq
                 JMP noEsMinimo
             
+
+            ;MINIMO
             minimoEtq:
                 BorrarPantalla
                 Minimo
@@ -957,6 +1114,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando6, contadorEtq
                 JMP noEsContador
 
+
+            ;CONTADOR
             contadorEtq:
                 BorrarPantalla
                 ContadorDatos
@@ -968,6 +1127,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando7, grafBarraAscEtq
                 JMP noEsGrafBarraAsc
             
+
+            ;GRAFICO BARRA ASCENDENTE
             grafBarraAscEtq:
                 BorrarPantalla
                 JMP Inicio
@@ -976,6 +1137,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando8, grafBarraDescEtq
                 JMP noEsGrafBarraDesc
             
+
+            ;GRAFICO BARRA DESCENDENTE
             grafBarraDescEtq:
                 BorrarPantalla
                 JMP Inicio
@@ -984,6 +1147,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando9, grafLineaEtq
                 JMP noEsGrafLinea
             
+
+            ;GRAFICO LINEA
             grafLineaEtq:
                 BorrarPantalla
                 JMP Inicio
@@ -993,11 +1158,11 @@ ENDM
                 JMP noEsAbrir
             
 
+            ;ABRIR ARCHIVO
             abrirEtq:
                 BorrarPantalla
                 PrintCadena msgToRequestFile
                 PedirCadena filename
-                ;info archivo de entrada
                 OpenFile
                 GetSizeFile handlerFile
                 ReadCSV handlerFile, numCSV
@@ -1011,6 +1176,8 @@ ENDM
                 CompararCadenas comandoIngreso, comando11, limpiarEtq
                 JMP noEsLimpiar
 
+
+            ;LIMPIAR PANTALLA
             limpiarEtq:
                 BorrarPantalla
                 JMP Inicio
@@ -1019,14 +1186,88 @@ ENDM
                 CompararCadenas comandoIngreso, comando12, reporteEtq
                 JMP noEsReporte
             
+
+            ;REPORTE
             reporteEtq:
                 BorrarPantalla
+                NuevoArchivo nombreArchivo, handleArchivo
+
+                ;MEDIANA
+                EscribirArchi msgMediana, handleArchivo
+                Mediana
+                MOV base, 10000
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;PROMEDIO
+                EscribirArchi msgPromedio, handleArchivo
+                Promedio
+                MOV base, 10000
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;MODA
+                EscribirArchi msgModa1, handleArchivo
+                BuildTablaFrecuencias
+                OrderFrecuencies
+                Moda
+                MOV base, 10000
+                EscribirArchi cadenaResult1, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;MAXIMO
+                EscribirArchi msgMaximo, handleArchivo
+                Maximo
+                MOV base, 10000
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;MINIMO
+                EscribirArchi msgMinimo, handleArchivo
+                Minimo
+                MOV base, 10000
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+                
+                ;TABLA DE FRECUENCIA
+                EscribirArchi msgDistrubucion, handleArchivo
+                EscribirArchi ln, handleArchivo
+                EscribirArchi msgEncabezadoTabla, handleArchivo
+                EscribirArchi ln, handleArchivo
+                PrintTablaFrecuencias
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;CONTADOR
+                EscribirArchi msgContadorDatos, handleArchivo
+                ContadorDatos
+                MOV base, 10000
+                EscribirArchi cadenaResult, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                ;FECHA
+                ObtenerFecha
+                EscribirArchi fechaCadena, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                
+                ;INFO
+                EscribirArchi carnetEstudiante, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                EscribirArchi nombreEstudiante, handleArchivo
+                EscribirArchi ln, handleArchivo
+
+                CerrarArchi handleArchivo
+
                 JMP Inicio
             
             noEsReporte:
                 CompararCadenas comandoIngreso, comando13, infoEtq
                 JMP noEsInfo
             
+
+            ;INFO
             infoEtq:
                 InfoEstudiante
                 JMP Inicio
@@ -1035,9 +1276,13 @@ ENDM
                 CompararCadenas comandoIngreso, comando14, salirEtq
                 JMP NoReconodido
             
+
+            ;SALIR
             SalirEtq:
                 Salir
 
+
+            ;NO RECONOCIDO
             NoReconodido:
                 BorrarPantalla
                 ImprimirCadenaPersonalizada TxtNoReconocido, 0, 0Ch, 21, 04, 12

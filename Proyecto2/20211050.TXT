@@ -1,0 +1,10 @@
+El Valor De la Mediana De Los Datos Es: 34.00
+El Promedio De Los Datos Es: 29.87
+La Moda De Los Datos Es: 
+El Valor Maximo De Los Datos Es: 56.00
+El Valor Minimo De Los Datos Es: 1.00
+Tabla de Distribucion De Frecuencias
+-> Valor    -> Frecuencia
+1
+El Total De Datos Utilizados Ha Sido De: 8
+
