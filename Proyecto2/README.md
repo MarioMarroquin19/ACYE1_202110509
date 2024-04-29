@@ -5,61 +5,41 @@
 
 - **Consola**
 
-    Al iniciar el ejecutable el usuario podrá visualizar el menú principal de la aplicación así como información
-    del desarrollador de la misma. 
-
-    Dentro del menú se pueden acceder a distintas opciones, ingresando el número de la opción correspondiente.
+    Al iniciar el ejecutable el usuario podrá visualizar el menú principal de la aplicación así como el texto que indica que ingrese un comando a la consola. 
 
     <p align = "center">
-        <img src = "imgs/menu.png" width="500px">
+        <img src = "imgs/consola.png" width="500px">
     </p>
 
-- **Nuevo Juego**
+- **Comandos**
 
-    Una vez el usuario ingresa a la primera opción ("Nuevo Juego"), el juego iniciará y pedirá un nickname para la 
-    partida, ESTE NICKNAME NO DEBE EXCEDER LOS 5 CARACTERES.
+    Los comandos disponibles dentro de la aplicación son los siguientes:
+
+        1. prom:  Mostrará en consola el resultado del promedio de los datos ingresados.
+        2. mediana: Mostrará en consola el resultado de la mediana de los datos ingresados.
+        3. moda: Mostrará en consola el resultado de la moda de los datos ingresados.
+        4. max: Mostrará en consola el máximo número del conjunto de datosingresados.
+        5. min: Mostrará en consola el mínimo número del conjunto de datosingresados.
+        6. contador: Mostrar en consola el número de datos que se cargaron en el archivo de entrada.
+        7. abrir: Entra al apartado para cargar el archivo csv y leer los datos.
+        8. limpiar: Al ingresar este comando se limpia la consola y queda a la espera de otro comando.
+        9. reporte: Al ingresar este comando se genera un reporte para visualizar los cálculos de mejor manera.
+        9. info: Se muestra la información del desarrollador de la aplicación.
+        10. salir: Termina el flujo del programa.
 
     <p align = "center">
-            <img src = "imgs/nickname.png" width="500px">
+            <img src = "imgs/mediana.png" width="500px">
     </p>
 
-    Cuando se ingresa un nickname el sistema automáticamente iniciará la partida y se podrá visualizar el tablero de juego. 
+    Al presionar enter, se puede visualizar el valor de dicho comando.
+
+    <p align = "center">
+            <img src = "imgs/mediana2.png" width="500px">
+    </p>
     
-    <p align = "center">
-            <img src = "imgs/tablero.png" width="500px">
-    </p>
-    
-    Así mismo se podrá visualizar distintas verificaciones indicando que en que etapa del juego se encuentran o como regresar al menú pricipal.
-
-    <p align = "center">
-        <img src = "imgs/mMenu.png" width="500px">
-    </p>
-
-    Consecutivamente el usuario debe ingresar la fila y columna de la pieza que desea mover (fila y columna que se encuentren dentro del tablero), una vez ingresadas, dentro del tablero se visualizan unas "x" indicando los posibles movimientos de la pieza deseada a mover.
-
-    **DENTRO DEL JUEGO ESTÁN DISPONIBLES TODOS LOS MOVIMIENTOS POSIBLES DE TODAS LAS PIEZAS DE UN TABLERO DE AJEDREZ**
-
-    <p align = "center">
-        <img src = "imgs/posibleMOV.png" width="500px">
-    </p>
-
-    El usuario elige a que casilla marcada con una "x" moverá la pieza, esto ingresando la fila y columna, una vez ingresadas se podrá visualizar que la pieza se ha movido, el ciclo vuelve a repetirse, para regresar al menú principal el usuario debe ingresar una letra "m" ya sea en la fila o columna.
-
-    <p align = "center">
-        <img src = "imgs/MOVpieza.png" width="500px">
-    </p>
-
-- **Puntajes**
-
-    Dentro de esta sección el usuario podrá visualizar al ultimo jugador dentro de la partida.
-
-    <p align = "center">
-        <img src = "imgs/puntajes.png" width="500px">
-    </p>
-
 - **Reportes**
 
-    La aplicacion generará un reporte en formato HTML, en donde se detallan de mejor manera los jugadores y la información del desarrollador de la aplicación.
+    La aplicacion generará un reporte en formato TXT, en donde se detallan de mejor manera los datos matemáticos previamente realizados y la información del desarrollador de la aplicación.
 
     <p align = "center">
         <img src = "imgs/reporte.png" width="500px">
@@ -67,7 +47,10 @@
 
 - **Salir**
 
-    Se detiene el flujo de la aplicación y finaliza.
+    Con este comando, se termina el flujo de la aplicación.
+    <p align = "center">
+        <img src = "imgs/salir.png" width="500px">
+    </p>
 
 
 ## 📌 **Manual Técnico**

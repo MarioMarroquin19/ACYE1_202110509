@@ -895,51 +895,92 @@ CerrarArchi MACRO handleArchivo
 
 ENDM
 
-ObtenerFecha MACRO
-    ; Obtener la fecha del sistema
-    MOV AH, 2Ah  ; Función del servicio DOS para obtener fecha
-    INT 21h      ; Llama al servicio de interrupción de DOS
-    
-    ; AL = Día de la semana, CX = Año, DH = Mes, DL = Día
+GetDateTime MACRO
+    ; Obtener la hora
+    mov ah, 2Ch
+    int 21h
 
-    ; Formatear el día
-    XOR AX, AX   ; Limpia AX
-    MOV AL, DL   ; Mueve el día a AL
-    MOV CX, 10
-    DIV CX       ; Divide por 10
-    ADD AH, '0'  ; Convierte la decena a ASCII
-    ADD AL, '0'  ; Convierte la unidad a ASCII
-    MOV fechaCadena[0], AH ; Decena del día
-    MOV fechaCadena[1], AL ; Unidad del día
+    ; Convertir hora a ASCII y almacenar en el buffer
+    mov al, ch
+    xor ah, ah
+    mov cx, 10
+    div cl
+    add al, '0'             ; Unidad de la hora
+    add ah, '0'             ; Decena de la hora
+    mov fechaHoraBuffer[12], al
+    mov fechaHoraBuffer[11], ah
+    mov byte ptr [fechaHoraBuffer+13], ':'
 
-    ; Formatear el mes
-    XOR AX, AX   ; Limpia AX
-    MOV AL, DH   ; Mueve el mes a AL
-    DIV CX       ; Divide por 10
-    ADD AH, '0'  ; Convierte la decena a ASCII
-    ADD AL, '0'  ; Convierte la unidad a ASCII
-    MOV fechaCadena[3], AH ; Decena del mes
-    MOV fechaCadena[4], AL ; Unidad del mes
+    ; Convertir minutos a ASCII y almacenar en el buffer
+    mov al, cl
+    xor ah, ah
+    mov cx, 10
+    div cl
+    add al, '0'             ; Unidad de los minutos
+    add ah, '0'             ; Decena de los minutos
+    mov fechaHoraBuffer[15], al
+    mov fechaHoraBuffer[14], ah
+    mov byte ptr [fechaHoraBuffer+16], ':'
 
-    ; Formatear el año
-    MOV AX, CX   ; Año en AX
-    MOV BX, 1000
-    DIV BX       ; Divide por 1000
-    ADD AL, '0'  ; Convierte el millar a ASCII
-    MOV fechaCadena[6], AL ; Millar del año
-    MOV AX, DX   ; Resto del año
-    MOV BX, 100
-    DIV BX       ; Divide por 100
-    ADD AL, '0'  ; Convierte la centena a ASCII
-    MOV fechaCadena[7], AL ; Centena del año
-    MOV AX, DX   ; Resto del año
-    MOV BX, 10
-    DIV BX       ; Divide por 10
-    ADD AH, '0'  ; Convierte la decena a ASCII
-    ADD AL, '0'  ; Convierte la unidad a ASCII
-    MOV fechaCadena[8], AH ; Decena del año
-    MOV fechaCadena[9], AL ; Unidad del año
+    ; Convertir segundos a ASCII y almacenar en el buffer
+    mov al, dh
+    xor ah, ah
+    mov cx, 10
+    div cl
+    add al, '0'             ; Unidad de los segundos
+    add ah, '0'             ; Decena de los segundos
+    mov fechaHoraBuffer[18], al
+    mov fechaHoraBuffer[17], ah
+
+    ; Obtener la fecha
+    mov ah, 2Ah
+    int 21h
+
+    ; Convertir día a ASCII y almacenar en el buffer
+    mov al, dl
+    xor ah, ah
+    mov cx, 10
+    div cl
+    add al, '0'             ; Unidad del día
+    add ah, '0'             ; Decena del día
+    mov fechaHoraBuffer[1], al
+    mov fechaHoraBuffer[0], ah
+    mov byte ptr [fechaHoraBuffer+2], '/'
+
+    ; Convertir mes a ASCII y almacenar en el buffer
+    mov al, dh
+    xor ah, ah
+    mov cx, 10
+    div cl
+    add al, '0'             ; Unidad del mes
+    add ah, '0'             ; Decena del mes
+    mov fechaHoraBuffer[4], al
+    mov fechaHoraBuffer[3], ah
+    mov byte ptr [fechaHoraBuffer+5], '/'
+
+    ; Convertir año a ASCII y almacenar en el buffer
+    mov ax, cx             ; El año completo está en cx
+    xor dx, dx
+    mov cx, 100
+    div cx                 ; AX ahora tiene los dos primeros dígitos del año en AH y los dos últimos en AL
+    mov bl, al             ; Guarda los dos últimos dígitos en BL
+    mov al, ah             ; Preparamos para dividir los dos primeros dígitos
+    xor ah, ah
+    mov cl, 10
+    div cl
+    add al, '0'            ; Unidad de los dos primeros dígitos del año
+    add ah, '0'            ; Decena de los dos primeros dígitos del año
+    mov fechaHoraBuffer[6], ah
+    mov fechaHoraBuffer[7], al
+    mov al, bl             ; Preparamos para dividir los dos últimos dígitos
+    xor ah, ah
+    div cl
+    add al, '0'            ; Unidad de los dos últimos dígitos del año
+    add ah, '0'            ; Decena de los dos últimos dígitos del año
+    mov fechaHoraBuffer[8], ah
+    mov fechaHoraBuffer[9], al
 ENDM
+
 
 .MODEL small
 .STACK 100h
@@ -981,10 +1022,11 @@ ENDM
     nombreEstudiante db "Nombre: Mario Ernesto Marroquin Perez","$"
     carnetEstudiante db "Carnet: 202110509","$"
 
-    fechaCadena db '00', '/', '00', '/', '0000', '$'  ; Cadena para la fecha sin texto
-    txtFecha db 'Fecha: ', '$'
-    formatoHora  db 'Hora: hh:mm:ss', 0Dh,0Ah, '$'
+    ;VARIBALES PARA LA FECHA
+    fechaHoraBuffer db '00/00/0000 00:00:00$', 0 
+
     
+
     msgModa1            db "La Moda De Los Datos Es: ", "$"
     msgModa2            db "Con Una Frecuencia De: ", "$"
     msgEncabezadoTabla  db "-> Valor    -> Frecuencia", "$"
@@ -1237,6 +1279,7 @@ ENDM
                 PrintTablaFrecuencias
                 EscribirArchi cadenaResult, handleArchivo
                 EscribirArchi ln, handleArchivo
+                CapturarOpcion enter
 
                 ;CONTADOR
                 EscribirArchi msgContadorDatos, handleArchivo
@@ -1246,8 +1289,8 @@ ENDM
                 EscribirArchi ln, handleArchivo
 
                 ;FECHA
-                ObtenerFecha
-                EscribirArchi fechaCadena, handleArchivo
+                GetDateTime
+                EscribirArchi fechaHoraBuffer, handleArchivo
                 EscribirArchi ln, handleArchivo
 
                 
