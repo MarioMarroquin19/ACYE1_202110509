@@ -649,7 +649,9 @@ PrintTablaFrecuencias MACRO
         CrearCadena entero, cadenaResult
         MOV cadenaResult[SI], 36
         PrintCadena espacios
+        EscribirArchi espacios, handleArchivo
         PrintCadena cadenaResult
+        EscribirArchi cadenaResult, handleArchivo
 
         POP AX
         MOV entero, AX
@@ -659,14 +661,18 @@ PrintTablaFrecuencias MACRO
         CrearCadena entero, cadenaResult
         MOV cadenaResult[SI], 36
         PrintCadena espacios
+        EscribirArchi espacios, handleArchivo
 
         MOV AH, 2
         MOV DL, 124
         INT 21h
 
         PrintCadena espacios
+        EscribirArchi espacios, handleArchivo
         PrintCadena cadenaResult
+        EscribirArchi cadenaResult, handleArchivo
         PrintCadena salto
+        EscribirArchi salto, handleArchivo
 
         POP CX
         DEC CX
@@ -741,8 +747,9 @@ Mensaje MACRO
     ImprimirCadenaPersonalizada wolfram5, 0, 0Ch, 55, 04, 5
     ImprimirCadenaPersonalizada wolfram6, 0, 0Ch, 55, 04, 6
     ImprimirCadenaPersonalizada wolfram7, 0, 0Ch, 55, 04, 7
-
-    ImprimirCadenaPersonalizada PedirComando, 0, 15, 33, 04, 10
+    ImprimirCadenaPersonalizada txtIngresarTecla, 0, 0Ah, 33, 04, 9
+    CapturarOpcion enter
+    ;ImprimirCadenaPersonalizada PedirComando, 0, 15, 33, 04, 10
 ENDM
 
 CapturarOpcion MACRO regSeleccion
@@ -981,6 +988,25 @@ GetDateTime MACRO
     mov fechaHoraBuffer[9], al
 ENDM
 
+MostrarTextoColor MACRO registroTexto, color, caracteres
+    mov ah, 9
+    mov bl, color; el color
+    mov cx, caracteres ; numero de caracteres
+    int 10h
+    mov DX,OFFSET registroTexto
+    int 21H
+
+ENDM
+
+; Macro para limpiar cualquier buffer con un valor dado
+LimpiarBuffer MACRO buffer, size, val
+    LOCAL limpiar_loop
+    lea di, buffer            ; Dirección del buffer
+    mov cx, size              ; Tamaño del buffer
+    mov al, val               ; Valor de limpieza
+    cld                       ; Asegurar que la dirección aumente
+    rep stosb                 ; Limpia el buffer estableciendo cada byte a AL
+ENDM
 
 .MODEL small
 .STACK 100h
@@ -1002,6 +1028,7 @@ ENDM
     msgMinimo           db "El Valor Minimo De Los Datos Es: ", "$"
     msgMediana          db "El Valor De la Mediana De Los Datos Es: ", "$"
     msgContadorDatos    db "El Total De Datos Utilizados Ha Sido De: ", "$"
+    txtIngresarTecla    db "Presione Una Tecla Para Continuar", "$"
     PedirComando        db ">>Ingrese El Comando A Realizar: ", "$"
     comandoIngreso      db 20 dup(?),0
     enter               db 1 dup(32);
@@ -1021,15 +1048,17 @@ ENDM
     TxtNoReconocido db "Comando No Reconocido", "$"
     nombreEstudiante db "Nombre: Mario Ernesto Marroquin Perez","$"
     carnetEstudiante db "Carnet: 202110509","$"
+    
 
     ;VARIBALES PARA LA FECHA
+    textFechaHora db "Fecha y Hora: ", "$"
     fechaHoraBuffer db '00/00/0000 00:00:00$', 0 
 
     
 
     msgModa1            db "La Moda De Los Datos Es: ", "$"
     msgModa2            db "Con Una Frecuencia De: ", "$"
-    msgEncabezadoTabla  db "-> Valor    -> Frecuencia", "$"
+    msgEncabezadoTabla  db "---Valor---  ---Frecuencia---", "$"
     msgDistrubucion     db "Tabla de Distribucion De Frecuencias", "$"
     salto               db 10, 13, "$"
     espacios            db 32, 32, 32, 32, 32, "$"
@@ -1080,11 +1109,16 @@ ENDM
     INT 10h
 
     Main PROC
-        BorrarPantalla
-        
-        Inicio:  
+        MSG:
+            BorrarPantalla
             Mensaje
+            BorrarPantalla
+        
+        Inicio:
+            PrintCadena ln
+            PrintCadena PedirComando
             LimpiarBufferMacro comandoIngreso, 20
+            LimpiarBuffer filename, 30, 32  ; Limpia 'filename' con ceros
             PedirComandoMacro comandoIngreso
             CompararCadenas comandoIngreso, comando1, promedioEtq
             JMP noEsPromedio
@@ -1092,7 +1126,6 @@ ENDM
 
             ;PROMEDIO
             promedioEtq:
-                BorrarPantalla
                 Promedio
                 MOV base, 10000
                 CapturarOpcion enter
@@ -1105,7 +1138,6 @@ ENDM
 
             ;MEDIANA
             medianaEtq:
-                BorrarPantalla
                 Mediana
                 MOV base, 10000
                 CapturarOpcion enter
@@ -1118,7 +1150,6 @@ ENDM
 
             ;MODA
             modaEtq:
-                BorrarPantalla
                 BuildTablaFrecuencias
                 OrderFrecuencies
                 Moda
@@ -1133,7 +1164,6 @@ ENDM
 
             ;MAXIMO
             maximoEtq:
-                BorrarPantalla
                 Maximo
                 MOV base, 10000
                 CapturarOpcion enter
@@ -1146,7 +1176,6 @@ ENDM
 
             ;MINIMO
             minimoEtq:
-                BorrarPantalla
                 Minimo
                 MOV base, 10000
                 CapturarOpcion enter
@@ -1159,7 +1188,6 @@ ENDM
 
             ;CONTADOR
             contadorEtq:
-                BorrarPantalla
                 ContadorDatos
                 MOV base, 10000
                 CapturarOpcion enter
@@ -1172,7 +1200,6 @@ ENDM
 
             ;GRAFICO BARRA ASCENDENTE
             grafBarraAscEtq:
-                BorrarPantalla
                 JMP Inicio
             
             noEsGrafBarraAsc:
@@ -1182,7 +1209,6 @@ ENDM
 
             ;GRAFICO BARRA DESCENDENTE
             grafBarraDescEtq:
-                BorrarPantalla
                 JMP Inicio
             
             noEsGrafBarraDesc:
@@ -1192,7 +1218,6 @@ ENDM
 
             ;GRAFICO LINEA
             grafLineaEtq:
-                BorrarPantalla
                 JMP Inicio
             
             noEsGrafLinea:
@@ -1202,7 +1227,6 @@ ENDM
 
             ;ABRIR ARCHIVO
             abrirEtq:
-                BorrarPantalla
                 PrintCadena msgToRequestFile
                 PedirCadena filename
                 OpenFile
@@ -1231,7 +1255,6 @@ ENDM
 
             ;REPORTE
             reporteEtq:
-                BorrarPantalla
                 NuevoArchivo nombreArchivo, handleArchivo
 
                 ;MEDIANA
@@ -1277,9 +1300,7 @@ ENDM
                 EscribirArchi msgEncabezadoTabla, handleArchivo
                 EscribirArchi ln, handleArchivo
                 PrintTablaFrecuencias
-                EscribirArchi cadenaResult, handleArchivo
                 EscribirArchi ln, handleArchivo
-                CapturarOpcion enter
 
                 ;CONTADOR
                 EscribirArchi msgContadorDatos, handleArchivo
@@ -1290,6 +1311,7 @@ ENDM
 
                 ;FECHA
                 GetDateTime
+                EscribirArchi textFechaHora, handleArchivo
                 EscribirArchi fechaHoraBuffer, handleArchivo
                 EscribirArchi ln, handleArchivo
 
@@ -1330,6 +1352,7 @@ ENDM
                 BorrarPantalla
                 ImprimirCadenaPersonalizada TxtNoReconocido, 0, 0Ch, 21, 04, 12
                 CapturarOpcion enter
+                BorrarPantalla
                 JMP Inicio
 
     Main ENDP
