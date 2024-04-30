@@ -1322,6 +1322,9 @@ ENDM
 
                 EscribirArchi nombreEstudiante, handleArchivo
                 EscribirArchi ln, handleArchivo
+                
+                PrintCadena ln
+                MostrarTextoColor textoCreacion, 08h,32
 
                 CerrarArchi handleArchivo
 
