@@ -13,7 +13,7 @@ El Valor De la Mediana De Los Datos Es: 34.00
      1          1
 
 El Total De Datos Utilizados Ha Sido De: 8
-Fecha y Hora: 03/40/0000 61:01:20
+Fecha y Hora: 03/40/0000 81:01:13
 Carnet: 202110509
 Nombre: Mario Ernesto Marroquin Perez
 
