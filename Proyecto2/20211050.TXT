@@ -1,19 +1,19 @@
-El Valor De la Mediana De Los Datos Es: 34.00
-El Promedio De Los Datos Es: 29.87
+El Valor De la Mediana De Los Datos Es: 37.00
+El Promedio De Los Datos Es: 40.90
 La Moda De Los Datos Es: 
-El Valor Maximo De Los Datos Es: 56.00
-El Valor Minimo De Los Datos Es: 1.00
+El Valor Maximo De Los Datos Es: 78.00
+El Valor Minimo De Los Datos Es: 15.00
 Tabla de Distribucion De Frecuencias
 ---Valor---  ---Frecuencia---
-     43          2
-     34          2
-     56          1
-     23          1
-     5          1
-     1          1
+     15          30
+     78          29
+     56          29
+     42          29
+     23          29
+     32          28
 
-El Total De Datos Utilizados Ha Sido De: 8
-Fecha y Hora: 03/40/0000 81:01:13
+El Total De Datos Utilizados Ha Sido De: Þ
+Fecha y Hora: 03/40/0000 12:01:82
 Carnet: 202110509
 Nombre: Mario Ernesto Marroquin Perez
 

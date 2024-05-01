@@ -1089,9 +1089,9 @@ ENDM
     comando4           db "max", 0
     comando5           db "min", 0
     comando6           db "contador", 0
-    comando7           db "graf_barra_asc", 0
-    comando8           db "graf_barra_desc", 0
-    comando9           db "graf_linea", 0
+    comando7           db "grafBarraAsc", 0
+    comando8           db "grafBarraDesc", 0
+    comando9           db "grafLinea", 0
     comando10          db "abrir", 0
     comando11          db "limpiar", 0
     comando12          db "reporte", 0
